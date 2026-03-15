@@ -50,7 +50,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
       <script type="module" src="/assets/app.js"></script>
     </head>
     <body>
-      <template id="appPayload">${escapeHtml(JSON.stringify(payload))}</template>
+      <script id="appPayload" type="application/json">${serializePayload(payload)}</script>
 
       <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
         <div class="loading-spinner"></div>
@@ -189,4 +189,15 @@ export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
       </main>
     </body>
   </html>`
+}
+
+function serializePayload (value) {
+  return JSON.stringify(value)
+    .replace(/[<>&]/g, char => {
+      if (char === '<') return '\\u003c'
+      if (char === '>') return '\\u003e'
+      return '\\u0026'
+    })
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
 }

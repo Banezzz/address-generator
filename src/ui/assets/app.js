@@ -40,7 +40,8 @@ function readPayload() {
   }
 
   try {
-    return JSON.parse(node.textContent || '{}');
+    var source = node.textContent || node.innerHTML || '{}';
+    return JSON.parse(source);
   } catch (error) {
     return {};
   }
@@ -607,6 +608,10 @@ function renderInbox() {
   var inboxList = document.getElementById('inboxList');
   var inboxDetail = document.getElementById('inboxDetail');
   var inbox = getLiveInbox();
+  var emailEntry = payload.emailEntry || {
+    address: '',
+    helperText: 'Suggested alias unavailable'
+  };
 
   if (!inboxMeta || !inboxActions || !inboxList || !inboxDetail) {
     return;
@@ -615,8 +620,8 @@ function renderInbox() {
   if (!inbox || !inbox.address) {
     inboxMeta.innerHTML =
       '<div class="inbox-empty">' +
-        '<strong>Suggested:</strong> ' + escapeForHtml(payload.emailEntry.address) + '<br />' +
-        '<span>' + escapeForHtml(payload.emailEntry.helperText) + '</span>' +
+        '<strong>Suggested:</strong> ' + escapeForHtml(emailEntry.address) + '<br />' +
+        '<span>' + escapeForHtml(emailEntry.helperText) + '</span>' +
       '</div>';
     inboxActions.innerHTML =
       '<button class="primary-btn full-width" type="button" data-action="create-inbox"' + disabledAttr(state.inboxBusy) + '>' +
