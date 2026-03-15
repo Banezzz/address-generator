@@ -126,9 +126,6 @@ export function renderApp({ regionConfig, regionId, subregionId, address, profil
                 <iframe
                   class="map-frame"
                   src="${escapeHtml(address.mapEmbedUrl)}"
-                  onload="if(typeof handleMapLoad==='function')handleMapLoad()"
-                  onerror="if(typeof handleMapError==='function')handleMapError()"
-                  loading="lazy"
                 ></iframe>
               </div>
             </div>
@@ -756,30 +753,37 @@ function getClientScript(payload) {
     });
     renderSavedAddresses();
     renderInbox();
-    setTimeout(() => {
-      const frame = document.querySelector('.map-frame');
-      if (frame && document.getElementById('map-loading').style.display !== 'none') {
-        handleMapError();
-      }
-    }, 10000);
+    const mapFrame = document.querySelector('.map-frame');
+    if (mapFrame) {
+      mapFrame.addEventListener('load', handleMapLoad);
+      mapFrame.addEventListener('error', handleMapError);
+      setTimeout(() => {
+        if (document.getElementById('map-loading').style.display !== 'none') {
+          handleMapError();
+        }
+      }, 8000);
+    } else {
+      handleMapError();
+    }
   `
 }
 
 function serializeForScript(value) {
-  // First get JSON string, then escape for HTML script embedding
-  // Need to handle: <, >, &, newlines, line separators, paragraph separators
   let json = JSON.stringify(value)
     .replace(/[<>]/g, c => c === '<' ? '\\u003c' : '\\u003e')
     .replace(/&/g, '\\u0026')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029')
   
-  // Insert safe newlines every 500 chars to prevent wrangler auto-wrap from breaking strings
-  // We split at object boundaries (},{) or array boundaries when possible
   let result = ''
   let lastCut = 0
+  let inString = false
   for (let i = 0; i < json.length; i++) {
-    if (i - lastCut > 400 && (json[i] === ',' || json[i] === '}' || json[i] === ']')) {
+    const char = json[i]
+    if (char === '"' && json[i - 1] !== '\\') {
+      inString = !inString
+    }
+    if (!inString && i - lastCut > 400 && (char === ',' || char === '}' || char === ']')) {
       result += json.slice(lastCut, i + 1) + '\n'
       lastCut = i + 1
     }
