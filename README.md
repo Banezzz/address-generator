@@ -11,33 +11,72 @@ A Cloudflare Worker that generates real, geocodable addresses for:
 - Thailand
 - Vietnam
 
-It pairs each address with region-matched synthetic identity details, bilingual name output, map preview, a live disposable inbox powered by `mail.tm`, and locally plausible phone prefixes for sign-up form testing.
+It pairs each address with region-matched synthetic identity details, bilingual name output, map preview, a same-origin disposable inbox powered by `mail.tm`, and locally plausible phone prefixes for sign-up form testing.
 
 ## Features
 
 - Real address lookup using OpenStreetMap Nominatim reverse geocoding
+- Explicit subregion validation rules instead of seed-only matching
+- Shared upstream HTTP client with real timeout, retry, backoff, abort, and per-service rate policy support
 - Google Maps embed and external map link
 - Region and subregion selection
 - Bilingual name presentation where applicable
-- Region-matched phone prefix explanation
-- Live temporary inbox creation, refresh, and message viewing via same-origin Worker endpoints
-- Copy-to-clipboard interactions
-- Local save, note, delete, and CSV export
-- Modern black-orange dark UI
-- Automatic fallback validation for harder geocoding regions
-- Retry/backoff handling for transient Nominatim `429` rate limits
+- Same-origin inbox API routes with bearer tokens in request headers instead of URL query strings
+- Session-scoped live inbox storage in the browser
+- Copy-to-clipboard interactions, local save, note, delete, and CSV export
+- Externalized client assets with a stricter CSP that no longer relies on inline script/style
 
-## Project Structure
+## Architecture
 
-- `src/index.js` - Worker entry
-- `src/config/regions.js` - region and subregion metadata
-- `src/config/seeds.js` - coordinate seeds
-- `src/services/address.js` - reverse geocoding and validation
-- `src/services/profile.js` - names and phone generation
-- `src/services/email.js` - suggested email alias shown before a live inbox is created
-- `src/services/tempInbox.js` - `mail.tm` integration for inbox creation and message retrieval
-- `src/services/formatters.js` - shared helpers
-- `src/ui/template.js` - HTML, CSS, and client-side interactions
+### Request flow
+
+- `src/index.js` routes page requests, API requests, and UI asset requests
+- `src/server/pageHandler.js` generates the page response
+- `src/server/apiRouter.js` applies method checks and stable JSON error envelopes
+- `src/server/security.js` owns CSP and other security headers
+
+### Services
+
+- `src/services/httpClient.js` provides shared timeout/retry/rate-limited upstream fetch logic
+- `src/services/geocodeClient.js` talks to Nominatim
+- `src/services/mailTmClient.js` talks to `mail.tm` and caches active domains
+- `src/services/address/*` contains address generation, normalization, formatting, and subregion matchers
+- `src/services/tempInbox.js` is the app-facing inbox service wrapper
+
+### UI
+
+- `src/ui/template.js` renders the page shell
+- `src/ui/renderers.js` contains reusable HTML fragments
+- `src/ui/assets/app.js` contains the browser client bundle served by the Worker
+- `src/ui/assets/styles.js` contains the stylesheet served by the Worker
+
+## API
+
+The Worker exposes same-origin inbox APIs:
+
+```text
+POST /api/inbox/create
+GET  /api/inbox/messages
+GET  /api/inbox/message?id=...
+```
+
+`/api/inbox/messages` and `/api/inbox/message` require:
+
+```text
+Authorization: Bearer <mail.tm token>
+```
+
+Errors return a stable JSON shape:
+
+```json
+{
+  "requestId": "uuid",
+  "error": {
+    "code": "bad_request",
+    "message": "Missing message id"
+  }
+}
+```
 
 ## Development
 
@@ -53,39 +92,41 @@ Run the Worker locally:
 npm run dev
 ```
 
-The Wrangler dev server runs on:
+Default local URL:
 
 ```text
 http://127.0.0.1:8787
 ```
 
-If you want to force host and port explicitly, you can also use:
+Verification commands:
 
 ```bash
-npm run dev -- --ip 127.0.0.1 --port 8787
+npm run lint
+npm test
 ```
 
-The app uses same-origin inbox API routes exposed by the Worker:
-
-```text
-POST /api/inbox/create
-GET  /api/inbox/messages?token=...
-GET  /api/inbox/message?token=...&id=...
-```
-
-Current dependency health:
+Or run both:
 
 ```bash
-npm audit
+npm run check
 ```
 
-At the moment, this reports:
+## Repository Conventions
 
-```text
-found 0 vulnerabilities
-```
+- `package-lock.json` is tracked and should stay committed.
+- `.wrangler/` is ignored and should not appear in `git status` after normal local development.
+- CI runs `npm run lint` and `npm test` on pushes to `main` and on pull requests.
 
-Deploy:
+## Security Notes
+
+- Inbox provider tokens are no longer placed in browser URLs.
+- Live inbox state uses `sessionStorage`, so it clears when the tab/session ends.
+- Inbox passwords are only kept in memory for the current tab session and are not persisted.
+- The page CSP uses external script and style assets and removes `'unsafe-inline'`.
+
+## Deployment
+
+Deploy to Cloudflare Workers:
 
 ```bash
 npm run deploy
@@ -95,6 +136,5 @@ npm run deploy
 
 - Addresses are intended for testing, design, and educational use.
 - Identity details are synthetic and only region-matched, not real individuals.
-- Geocoding coverage varies by region; retrying another subregion may produce better results.
-- Temporary inbox functionality depends on `mail.tm` availability and rate limits.
-- Reverse geocoding depends on OpenStreetMap Nominatim coverage and upstream response limits.
+- Reverse geocoding quality still depends on upstream OpenStreetMap coverage.
+- Temporary inbox functionality still depends on `mail.tm` availability and rate limits.
