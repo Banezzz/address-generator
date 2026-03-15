@@ -667,7 +667,7 @@ function getClientScript(payload) {
         ...rows.map(row => [row.note, row.region, row.name, row.phone, row.fullAddress]
           .map(field => '"' + String(field).replace(/"/g, '""') + '"')
           .join(','))
-      ].join('\n');
+      ].join('\\n');
 
       const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), content], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
