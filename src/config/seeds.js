@@ -1,6 +1,6 @@
-import { TAX_FREE_STATE_CODES } from "./regions.js"
+import { TAX_FREE_STATE_CODES } from './regions.js'
 
- export const US_STATE_COORDINATES = {
+export const US_STATE_COORDINATES = {
   AL: [{ lat: 32.377716, lng: -86.300568 }, { lat: 33.520661, lng: -86.80249 }],
   AK: [
     { lat: 61.216583, lng: -149.899597 },
@@ -131,121 +131,184 @@ export const REGION_SEEDS = {
     CENTRAL: [
       { lat: 1.2857, lng: 103.8516 },
       { lat: 1.2966, lng: 103.8501 },
-      { lat: 1.3048, lng: 103.8318 }
+      { lat: 1.3048, lng: 103.8318 },
+      { lat: 1.2827, lng: 103.8436 },
+      { lat: 1.2999, lng: 103.8385 },
+      { lat: 1.2914, lng: 103.8589 }
     ],
     QUEENSTOWN: [
       { lat: 1.2942, lng: 103.7869 },
       { lat: 1.3067, lng: 103.7984 },
-      { lat: 1.2893, lng: 103.803 }
+      { lat: 1.2893, lng: 103.803 },
+      { lat: 1.3012, lng: 103.7921 },
+      { lat: 1.2956, lng: 103.8114 },
+      { lat: 1.2834, lng: 103.7956 }
     ],
     JURONG_EAST: [
       { lat: 1.3331, lng: 103.7422 },
       { lat: 1.3269, lng: 103.7388 },
-      { lat: 1.3398, lng: 103.7392 }
+      { lat: 1.3398, lng: 103.7392 },
+      { lat: 1.3412, lng: 103.7314 },
+      { lat: 1.3288, lng: 103.7256 }
     ],
     TAMPINES: [
       { lat: 1.3521, lng: 103.9448 },
       { lat: 1.3483, lng: 103.9385 },
-      { lat: 1.3576, lng: 103.9455 }
+      { lat: 1.3576, lng: 103.9455 },
+      { lat: 1.3612, lng: 103.9512 },
+      { lat: 1.3445, lng: 103.9328 },
+      { lat: 1.3534, lng: 103.9589 }
     ]
   },
   JP: {
     TOKYO: [
       { lat: 35.6595, lng: 139.7005 },
       { lat: 35.6938, lng: 139.7034 },
-      { lat: 35.6717, lng: 139.765 }
+      { lat: 35.6717, lng: 139.765 },
+      { lat: 35.6814, lng: 139.7654 },
+      { lat: 35.7012, lng: 139.6842 },
+      { lat: 35.6587, lng: 139.7415 }
     ],
     OSAKA: [
       { lat: 34.7025, lng: 135.4959 },
       { lat: 34.6687, lng: 135.5019 },
-      { lat: 34.6937, lng: 135.5023 }
+      { lat: 34.6937, lng: 135.5023 },
+      { lat: 34.6814, lng: 135.4887 },
+      { lat: 34.7123, lng: 135.4934 }
     ],
     YOKOHAMA: [
       { lat: 35.4662, lng: 139.6227 },
       { lat: 35.4437, lng: 139.638 },
-      { lat: 35.454, lng: 139.6316 }
+      { lat: 35.454, lng: 139.6316 },
+      { lat: 35.4789, lng: 139.6145 },
+      { lat: 35.4321, lng: 139.6489 }
     ],
     FUKUOKA: [
       { lat: 33.5892, lng: 130.4017 },
       { lat: 33.5931, lng: 130.4205 },
-      { lat: 33.5795, lng: 130.3831 }
+      { lat: 33.5795, lng: 130.3831 },
+      { lat: 33.6012, lng: 130.3923 },
+      { lat: 33.5687, lng: 130.4156 }
     ]
   },
   TW: {
     TAIPEI: [
       { lat: 25.033, lng: 121.5654 },
       { lat: 25.0478, lng: 121.5319 },
-      { lat: 25.0418, lng: 121.5445 }
+      { lat: 25.0418, lng: 121.5445 },
+      { lat: 25.0221, lng: 121.5487 },
+      { lat: 25.0567, lng: 121.5234 },
+      { lat: 25.0389, lng: 121.5512 },
+      { lat: 25.0287, lng: 121.5678 },
+      { lat: 25.0456, lng: 121.5412 }
     ],
     TAICHUNG: [
       { lat: 24.1477, lng: 120.6736 },
       { lat: 24.1631, lng: 120.6476 },
-      { lat: 24.1711, lng: 120.6424 }
+      { lat: 24.1711, lng: 120.6424 },
+      { lat: 24.1345, lng: 120.6892 },
+      { lat: 24.1523, lng: 120.6587 },
+      { lat: 24.1789, lng: 120.6345 }
     ],
     TAINAN: [
       { lat: 22.9999, lng: 120.227 },
       { lat: 22.9925, lng: 120.2059 },
-      { lat: 22.9814, lng: 120.2187 }
+      { lat: 22.9814, lng: 120.2187 },
+      { lat: 23.0123, lng: 120.2156 },
+      { lat: 22.9789, lng: 120.2345 },
+      { lat: 22.9878, lng: 120.1923 }
     ],
     KAOHSIUNG: [
       { lat: 22.6273, lng: 120.3014 },
       { lat: 22.6871, lng: 120.3087 },
-      { lat: 22.6309, lng: 120.3413 }
+      { lat: 22.6309, lng: 120.3413 },
+      { lat: 22.6412, lng: 120.3125 },
+      { lat: 22.6234, lng: 120.2856 },
+      { lat: 22.6789, lng: 120.2978 }
     ]
   },
   TH: {
     BANGKOK: [
       { lat: 13.7308, lng: 100.5418 },
       { lat: 13.7234, lng: 100.5293 },
-      { lat: 13.7466, lng: 100.5347 }
+      { lat: 13.7466, lng: 100.5347 },
+      { lat: 13.7567, lng: 100.5012 },
+      { lat: 13.7123, lng: 100.5189 },
+      { lat: 13.7389, lng: 100.5623 },
+      { lat: 13.7456, lng: 100.5234 },
+      { lat: 13.7287, lng: 100.5578 }
     ],
     CHIANG_MAI: [
       { lat: 18.7883, lng: 98.9853 },
       { lat: 18.7953, lng: 98.9986 },
-      { lat: 18.7838, lng: 98.9806 }
+      { lat: 18.7838, lng: 98.9806 },
+      { lat: 18.7712, lng: 98.9723 },
+      { lat: 18.8012, lng: 98.9923 },
+      { lat: 18.7789, lng: 99.0123 }
     ],
     PHUKET: [
       { lat: 7.8804, lng: 98.3923 },
       { lat: 7.8899, lng: 98.3856 },
-      { lat: 7.901, lng: 98.3742 }
+      { lat: 7.901, lng: 98.3742 },
+      { lat: 7.8712, lng: 98.3989 },
+      { lat: 7.9123, lng: 98.3623 },
+      { lat: 7.8956, lng: 98.4089 }
     ],
     CHONBURI: [
       { lat: 13.3611, lng: 100.9847 },
       { lat: 13.3404, lng: 100.9713 },
-      { lat: 13.1642, lng: 100.9317 }
+      { lat: 13.1642, lng: 100.9317 },
+      { lat: 13.3789, lng: 100.9923 },
+      { lat: 13.3512, lng: 100.9612 },
+      { lat: 12.9123, lng: 100.8789 }
     ]
   },
   VN: {
     HCMC: [
       { lat: 10.7769, lng: 106.7009 },
       { lat: 10.7869, lng: 106.6991 },
-      { lat: 10.7984, lng: 106.6881 }
+      { lat: 10.7984, lng: 106.6881 },
+      { lat: 10.7623, lng: 106.6812 },
+      { lat: 10.7812, lng: 106.7123 },
+      { lat: 10.7712, lng: 106.7289 },
+      { lat: 10.7923, lng: 106.6589 },
+      { lat: 10.7589, lng: 106.7123 }
     ],
     HANOI: [
       { lat: 21.0285, lng: 105.8542 },
       { lat: 21.0323, lng: 105.8484 },
-      { lat: 21.0177, lng: 105.8365 }
+      { lat: 21.0177, lng: 105.8365 },
+      { lat: 21.0412, lng: 105.8623 },
+      { lat: 21.0123, lng: 105.8289 },
+      { lat: 21.0389, lng: 105.8412 },
+      { lat: 21.0212, lng: 105.8712 }
     ],
     DANANG: [
       { lat: 16.0544, lng: 108.2022 },
       { lat: 16.0678, lng: 108.2208 },
-      { lat: 16.0603, lng: 108.2244 }
+      { lat: 16.0603, lng: 108.2244 },
+      { lat: 16.0412, lng: 108.1912 },
+      { lat: 16.0789, lng: 108.2089 },
+      { lat: 16.0523, lng: 108.2389 }
     ],
     CANTHO: [
       { lat: 10.0452, lng: 105.7469 },
       { lat: 10.0341, lng: 105.7845 },
-      { lat: 10.0281, lng: 105.7682 }
+      { lat: 10.0281, lng: 105.7682 },
+      { lat: 10.0512, lng: 105.7289 },
+      { lat: 10.0212, lng: 105.7612 },
+      { lat: 10.0389, lng: 105.7989 }
     ]
   }
 }
 
-export function getSeedCoordinates(regionId, subregionId, scope = "subregion") {
-  if (regionId === "US" || regionId === "US_TAX_FREE") {
-    if (scope === "region" && regionId === "US_TAX_FREE") {
+export function getSeedCoordinates (regionId, subregionId, scope = 'subregion') {
+  if (regionId === 'US' || regionId === 'US_TAX_FREE') {
+    if (scope === 'region' && regionId === 'US_TAX_FREE') {
       return TAX_FREE_STATE_CODES.flatMap(code => US_STATE_COORDINATES[code] || [])
     }
 
-    return US_STATE_COORDINATES[subregionId] || (regionId === "US_TAX_FREE"
+    return US_STATE_COORDINATES[subregionId] || (regionId === 'US_TAX_FREE'
       ? TAX_FREE_STATE_CODES.flatMap(code => US_STATE_COORDINATES[code] || [])
       : Object.values(US_STATE_COORDINATES).flat())
   }
@@ -255,7 +318,7 @@ export function getSeedCoordinates(regionId, subregionId, scope = "subregion") {
     return []
   }
 
-  if (scope === "region") {
+  if (scope === 'region') {
     return Object.values(regionSeeds).flat()
   }
 

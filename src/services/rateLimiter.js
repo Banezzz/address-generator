@@ -5,14 +5,14 @@ let lastRequestTime = 0
 const MAX_CONCURRENT = 2
 const MIN_INTERVAL_MS = 1100
 
-export async function rateLimitedFetch(fetchFn, url, options) {
+export async function rateLimitedFetch (fetchFn, url, options) {
   return new Promise((resolve, reject) => {
     requestQueue.push({ fetchFn, url, options, resolve, reject })
     processQueue()
   })
 }
 
-async function processQueue() {
+async function processQueue () {
   if (activeRequests >= MAX_CONCURRENT || requestQueue.length === 0) return
 
   const now = Date.now()
@@ -39,7 +39,7 @@ async function processQueue() {
   }
 }
 
-export function getQueueStats() {
+export function getQueueStats () {
   return {
     pending: requestQueue.length,
     active: activeRequests

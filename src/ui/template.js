@@ -1,7 +1,7 @@
-import { getRegionOptions, getSubregionOptions } from "../config/regions.js"
-import { escapeHtml } from "../services/formatters.js"
+import { getRegionOptions, getSubregionOptions } from '../config/regions.js'
+import { escapeHtml } from '../services/formatters.js'
 
-export function renderApp({ regionConfig, regionId, subregionId, address, profile, emailEntry }) {
+export function renderApp ({ regionConfig, regionId, subregionId, address, profile, emailEntry }) {
   const regionOptions = getRegionOptions()
   const subregionOptions = getSubregionOptions(regionId)
   const safePayload = serializeForScript({
@@ -22,20 +22,20 @@ export function renderApp({ regionConfig, regionId, subregionId, address, profil
   })
 
   const infoRows = [
-    { label: "姓 / Family", value: profile.familyNameNative, secondary: profile.familyNameLatin, span: "compact" },
-    { label: "名 / Given", value: profile.givenNameNative, secondary: profile.givenNameLatin, span: "compact" },
-    { label: "本地姓名 / Native", value: profile.fullNameNative, secondary: null, span: "compact" },
-    { label: "Latin / Romanized", value: profile.fullNameLatin, secondary: null, span: "compact" },
-    { label: "性别 / Gender", value: profile.gender, secondary: null, span: "compact" },
-    { label: "电话 / Phone", value: profile.phone, secondary: `Prefix ${profile.phonePrefix}`, span: "compact" },
-    { label: "电子邮件 / Email", value: emailEntry.address, secondary: emailEntry.helperText, span: "wide" },
-    { label: "街道 / Street", value: address.street, secondary: null, span: "wide" },
-    { label: "城市 / City", value: address.city, secondary: address.district !== "N/A" ? address.district : null, span: "compact" },
-    { label: `${regionConfig.adminLabelNative} / ${regionConfig.adminLabel}`, value: address.admin, secondary: null, span: "compact" },
-    { label: `${regionConfig.postalLabelNative} / ${regionConfig.postalLabel}`, value: address.postalCode, secondary: null, span: "compact" },
-    { label: "国家 / Region", value: `${regionConfig.nativeLabel} / ${regionConfig.label}`, secondary: null, span: "compact" },
-    { label: "完整地址 / Full", value: address.fullAddress, secondary: null, span: "full" },
-    { label: "经纬度 / Coordinates", value: address.coordinates, secondary: address.sourceLabel, span: "full" }
+    { label: '姓 / Family', value: profile.familyNameNative, secondary: profile.familyNameLatin, span: 'compact' },
+    { label: '名 / Given', value: profile.givenNameNative, secondary: profile.givenNameLatin, span: 'compact' },
+    { label: '本地姓名 / Native', value: profile.fullNameNative, secondary: null, span: 'compact' },
+    { label: 'Latin / Romanized', value: profile.fullNameLatin, secondary: null, span: 'compact' },
+    { label: '性别 / Gender', value: profile.gender, secondary: null, span: 'compact' },
+    { label: '电话 / Phone', value: profile.phone, secondary: `Prefix ${profile.phonePrefix}`, span: 'compact' },
+    { label: '电子邮件 / Email', value: emailEntry.address, secondary: emailEntry.helperText, span: 'wide' },
+    { label: '街道 / Street', value: address.street, secondary: null, span: 'wide' },
+    { label: '城市 / City', value: address.city, secondary: address.district !== 'N/A' ? address.district : null, span: 'compact' },
+    { label: `${regionConfig.adminLabelNative} / ${regionConfig.adminLabel}`, value: address.admin, secondary: null, span: 'compact' },
+    { label: `${regionConfig.postalLabelNative} / ${regionConfig.postalLabel}`, value: address.postalCode, secondary: null, span: 'compact' },
+    { label: '国家 / Region', value: `${regionConfig.nativeLabel} / ${regionConfig.label}`, secondary: null, span: 'compact' },
+    { label: '完整地址 / Full', value: address.fullAddress, secondary: null, span: 'full' },
+    { label: '经纬度 / Coordinates', value: address.coordinates, secondary: address.sourceLabel, span: 'full' }
   ]
 
   return `<!DOCTYPE html>
@@ -73,13 +73,13 @@ export function renderApp({ regionConfig, regionId, subregionId, address, profil
               <div class="toolbar-group">
                 <label for="region">地区 / Region</label>
                 <select id="region" name="region" autocomplete="off">
-                  ${regionOptions.map(option => `<option value="${option.id}" ${option.id === regionId ? "selected" : ""}>${escapeHtml(option.nativeLabel)} / ${escapeHtml(option.label)}</option>`).join("")}
+                  ${regionOptions.map(option => `<option value="${option.id}" ${option.id === regionId ? 'selected' : ''}>${escapeHtml(option.nativeLabel)} / ${escapeHtml(option.label)}</option>`).join('')}
                 </select>
               </div>
               <div class="toolbar-group">
                 <label id="subregionLabel" for="subregion">${escapeHtml(regionConfig.subregionLabelNative)} / ${escapeHtml(regionConfig.subregionLabel)}</label>
                 <select id="subregion" name="subregion" autocomplete="off">
-                  ${subregionOptions.map(option => `<option value="${option.id}" ${option.id === subregionId ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+                  ${subregionOptions.map(option => `<option value="${option.id}" ${option.id === subregionId ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
                 </select>
               </div>
               <div class="toolbar-actions">
@@ -109,7 +109,7 @@ export function renderApp({ regionConfig, regionId, subregionId, address, profil
               </div>
 
               <div class="info-grid">
-                ${infoRows.map(renderInfoRow).join("")}
+                ${infoRows.map(renderInfoRow).join('')}
               </div>
             </div>
 
@@ -203,11 +203,11 @@ export function renderApp({ regionConfig, regionId, subregionId, address, profil
   </html>`
 }
 
-function renderInfoRow(row) {
-  const displayValue = escapeHtml(row.value || "")
-  const copyValue = JSON.stringify(String(row.value || ""))
-  const secondary = row.secondary ? `<div class="info-secondary">${escapeHtml(row.secondary)}</div>` : ""
-  const spanClass = row.span ? ` ${escapeHtml(row.span)}` : ""
+function renderInfoRow (row) {
+  const displayValue = escapeHtml(row.value || '')
+  const copyValue = JSON.stringify(String(row.value || ''))
+  const secondary = row.secondary ? `<div class="info-secondary">${escapeHtml(row.secondary)}</div>` : ''
+  const spanClass = row.span ? ` ${escapeHtml(row.span)}` : ''
 
   return `<article class="info-row copy-card${spanClass}" role="button" tabindex="0" onclick='copyToClipboard(${copyValue})' onkeydown='handleCopyKeydown(event, ${copyValue})'>
     <div class="info-meta">
@@ -220,7 +220,7 @@ function renderInfoRow(row) {
   </article>`
 }
 
-function getClientScript(payload) {
+function getClientScript (payload) {
   return `
     const payload = ${payload};
     const LIVE_INBOX_KEY = 'live-temp-inbox-v1';
@@ -683,7 +683,7 @@ function getClientScript(payload) {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\"/g, '&quot;')
+        .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
 
@@ -768,13 +768,13 @@ function getClientScript(payload) {
   `
 }
 
-function serializeForScript(value) {
-  let json = JSON.stringify(value)
+function serializeForScript (value) {
+  const json = JSON.stringify(value)
     .replace(/[<>]/g, c => c === '<' ? '\\u003c' : '\\u003e')
     .replace(/&/g, '\\u0026')
     .replace(/\u2028/g, '\\u2028')
     .replace(/\u2029/g, '\\u2029')
-  
+
   let result = ''
   let lastCut = 0
   let inString = false
@@ -792,7 +792,7 @@ function serializeForScript(value) {
   return result
 }
 
-function getStyles() {
+function getStyles () {
   return `
     :root {
       color-scheme: dark;

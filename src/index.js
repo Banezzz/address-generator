@@ -1,49 +1,49 @@
-import { resolveSubregion, getRegionConfig } from "./config/regions.js"
-import { generateAddress } from "./services/address.js"
-import { buildEmailEntry } from "./services/email.js"
-import { buildProfile } from "./services/profile.js"
-import { createTempInbox, getTempInboxMessage, listTempInboxMessages } from "./services/tempInbox.js"
-import { renderApp } from "./ui/template.js"
+import { resolveSubregion, getRegionConfig } from './config/regions.js'
+import { generateAddress } from './services/address.js'
+import { buildEmailEntry } from './services/email.js'
+import { buildProfile } from './services/profile.js'
+import { createTempInbox, getTempInboxMessage, listTempInboxMessages } from './services/tempInbox.js'
+import { renderApp } from './ui/template.js'
 
 export default {
-  async fetch(request) {
+  async fetch (request) {
     return handleRequest(request)
   }
 }
 
-async function handleRequest(request) {
+async function handleRequest (request) {
   const url = new URL(request.url)
 
-  if (url.pathname === "/api/inbox/create" && request.method === "POST") {
+  if (url.pathname === '/api/inbox/create' && request.method === 'POST') {
     const body = await readJsonBody(request)
-    const inbox = await createTempInbox(fetch, body.hint || "address-user")
+    const inbox = await createTempInbox(fetch, body.hint || 'address-user')
     return jsonResponse(inbox)
   }
 
-  if (url.pathname === "/api/inbox/messages" && request.method === "GET") {
-    const token = url.searchParams.get("token") || ""
+  if (url.pathname === '/api/inbox/messages' && request.method === 'GET') {
+    const token = url.searchParams.get('token') || ''
     if (!token) {
-      return jsonResponse({ error: "Missing token" }, 400)
+      return jsonResponse({ error: 'Missing token' }, 400)
     }
 
     const messages = await listTempInboxMessages(fetch, token)
     return jsonResponse({ messages })
   }
 
-  if (url.pathname === "/api/inbox/message" && request.method === "GET") {
-    const token = url.searchParams.get("token") || ""
-    const id = url.searchParams.get("id") || ""
+  if (url.pathname === '/api/inbox/message' && request.method === 'GET') {
+    const token = url.searchParams.get('token') || ''
+    const id = url.searchParams.get('id') || ''
 
     if (!token || !id) {
-      return jsonResponse({ error: "Missing token or id" }, 400)
+      return jsonResponse({ error: 'Missing token or id' }, 400)
     }
 
     const message = await getTempInboxMessage(fetch, token, id)
     return jsonResponse({ message })
   }
 
-  const regionId = url.searchParams.get("region") || "US"
-  const requestedSubregion = url.searchParams.get("subregion") || ""
+  const regionId = url.searchParams.get('region') || 'US'
+  const requestedSubregion = url.searchParams.get('subregion') || ''
   const regionConfig = getRegionConfig(regionId)
   const subregionId = resolveSubregion(regionConfig.id, requestedSubregion)
 
@@ -71,9 +71,9 @@ async function handleRequest(request) {
 
     return new Response(html, {
       headers: {
-        "content-type": "text/html;charset=UTF-8",
-        "cache-control": "no-store",
-        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src https://www.google.com; connect-src 'self' https://nominatim.openstreetmap.org https://api.mail.tm"
+        'content-type': 'text/html;charset=UTF-8',
+        'cache-control': 'no-store',
+        'content-security-policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src https://www.google.com; connect-src 'self' https://nominatim.openstreetmap.org https://api.mail.tm"
       }
     })
   } catch (error) {
@@ -105,15 +105,15 @@ async function handleRequest(request) {
     return new Response(message, {
       status: 500,
       headers: {
-        "content-type": "text/html;charset=UTF-8",
-        "cache-control": "no-store",
-        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src https://www.google.com; connect-src 'self' https://nominatim.openstreetmap.org https://api.mail.tm"
+        'content-type': 'text/html;charset=UTF-8',
+        'cache-control': 'no-store',
+        'content-security-policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src https://www.google.com; connect-src 'self' https://nominatim.openstreetmap.org https://api.mail.tm"
       }
     })
   }
 }
 
-async function readJsonBody(request) {
+async function readJsonBody (request) {
   try {
     return await request.json()
   } catch {
@@ -121,12 +121,12 @@ async function readJsonBody(request) {
   }
 }
 
-function jsonResponse(data, status = 200) {
+function jsonResponse (data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "content-type": "application/json;charset=UTF-8",
-      "cache-control": "no-store"
+      'content-type': 'application/json;charset=UTF-8',
+      'cache-control': 'no-store'
     }
   })
 }
