@@ -1,0 +1,17 @@
+{
+  "name": "multi-region-address-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.7.0"
+  },
+  "overrides": {
+    "undici": "^7.24.0"
+  }
+}
