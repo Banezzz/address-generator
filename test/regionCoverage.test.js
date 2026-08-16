@@ -16,7 +16,8 @@ describe('region coverage', () => {
       'TW',
       'TH',
       'VN',
-      'KR'
+      'KR',
+      'IN'
     ])
 
     for (const region of REGION_CONFIGS) {
@@ -57,5 +58,10 @@ describe('region coverage', () => {
   it('gives Korea a timeout and jitter like the other dense Asian cities', () => {
     expect(REGION_ADDRESS_TIMEOUT_MS.KR).toBe(25000)
     expect(REGION_JITTER.KR).toBe(0.015)
+  })
+
+  it('gives India a timeout and jitter for large metro areas', () => {
+    expect(REGION_ADDRESS_TIMEOUT_MS.IN).toBe(25000)
+    expect(REGION_JITTER.IN).toBe(0.02)
   })
 })

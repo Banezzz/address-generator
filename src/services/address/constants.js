@@ -10,7 +10,8 @@ export const REGION_ADDRESS_TIMEOUT_MS = {
   TW: 25000,
   TH: 25000,
   VN: 25000,
-  KR: 25000
+  KR: 25000,
+  IN: 25000
 }
 
 export const REGION_JITTER = {
@@ -22,5 +23,6 @@ export const REGION_JITTER = {
   TW: 0.015,
   TH: 0.018,
   VN: 0.018,
-  KR: 0.015
+  KR: 0.015,
+  IN: 0.02
 }

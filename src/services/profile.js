@@ -59,6 +59,13 @@ const KR_NAMES = [
   { nativeFamily: '최', nativeGiven: '수아', latinGiven: 'Su-A', latinFamily: 'Choi', gender: 'Female' }
 ]
 
+const IN_NAMES = [
+  { nativeFamily: 'शर्मा', nativeGiven: 'आरव', latinGiven: 'Aarav', latinFamily: 'Sharma', gender: 'Male' },
+  { nativeFamily: 'पटेल', nativeGiven: 'अनन्या', latinGiven: 'Ananya', latinFamily: 'Patel', gender: 'Female' },
+  { nativeFamily: 'रेड्डी', nativeGiven: 'रोहन', latinGiven: 'Rohan', latinFamily: 'Reddy', gender: 'Male' },
+  { nativeFamily: 'इयेर', nativeGiven: 'मेधा', latinGiven: 'Medha', latinFamily: 'Iyer', gender: 'Female' }
+]
+
 const NAME_BUCKET_MAP = new Map([
   ['US', US_NAMES],
   ['US_TAX_FREE', US_NAMES],
@@ -68,7 +75,8 @@ const NAME_BUCKET_MAP = new Map([
   ['TW', TW_NAMES],
   ['TH', TH_NAMES],
   ['VN', VN_NAMES],
-  ['KR', KR_NAMES]
+  ['KR', KR_NAMES],
+  ['IN', IN_NAMES]
 ])
 
 const US_AREA_CODES = {
@@ -208,6 +216,17 @@ const REGION_PHONE_RULES = {
         ? `+82 ${prefix}-${randomDigits(4)}-${randomDigits(4)}`
         : `+82 ${prefix}-${randomDigits(3)}-${randomDigits(4)}`
     }
+  },
+  IN: {
+    prefixes: {
+      MUMBAI: ['22'],
+      DELHI: ['11'],
+      BENGALURU: ['80'],
+      HYDERABAD: ['40']
+    },
+    build (prefix) {
+      return `+91 ${prefix} ${randomDigits(4)} ${randomDigits(4)}`
+    }
   }
 }
 
@@ -246,6 +265,12 @@ const NO_SPACE_NATIVE_REGIONS = new Set(['JP', 'HK', 'TW', 'SG', 'KR'])
 function buildFullName (regionId, person, native) {
   if (regionId === 'US' || regionId === 'US_TAX_FREE') {
     return `${person.given} ${person.family}`
+  }
+
+  if (regionId === 'IN') {
+    return native
+      ? `${person.nativeGiven} ${person.nativeFamily}`.trim()
+      : `${person.latinGiven} ${person.latinFamily}`.trim()
   }
 
   if (native) {

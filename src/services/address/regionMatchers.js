@@ -42,6 +42,12 @@ const REGION_KEYWORDS = {
     BUSAN: ['busan', '부산', '부산광역시', 'haeundae', '해운대', 'seomyeon', '서면', 'dongnae', 'sasang', 'kr-26'],
     INCHEON: ['incheon', '인천', '인천광역시', 'songdo', '송도', 'yeonsu', '연수', 'bupyeong', '부평', 'namdong', 'kr-28'],
     DAEGU: ['daegu', '대구', '대구광역시', 'suseong', '수성', 'dalseo', 'jung-gu', 'dong-gu', 'kr-27']
+  },
+  IN: {
+    MUMBAI: ['mumbai', 'मुंबई', 'maharashtra', 'महाराष्ट्र', 'in-mh', 'bandra', 'andheri', 'worli', 'colaba', 'kurla', 'dadar'],
+    DELHI: ['delhi', 'new delhi', 'दिल्ली', 'in-dl', 'connaught', 'raisina', 'नयी दिल्ली'],
+    BENGALURU: ['bengaluru', 'bangalore', 'बेंगलुरु', 'karnataka', 'in-ka', 'koramangala', 'indiranagar'],
+    HYDERABAD: ['hyderabad', 'हैदराबाद', 'telangana', 'in-ts', 'banjara', 'gachibowli', 'nampally']
   }
 }
 
@@ -119,6 +125,6 @@ function normalizeText (value) {
   return stripDiacritics(String(value ?? ''))
     .normalize('NFC')
     .toLowerCase()
-    .replace(/[^a-z0-9\u3400-\u9fff\u0e00-\u0e7f\uac00-\ud7a3]+/g, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim()
 }

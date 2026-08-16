@@ -142,6 +142,41 @@ describe('normalizeGeocodeResult', () => {
     expect(result.fullAddress).toContain('강남구')
     expect(result.fullAddress).toContain('서울특별시')
   })
+
+  it('normalizes Indian city addresses from state, city, and PIN fields', () => {
+    const result = normalizeGeocodeResult({
+      regionId: 'IN',
+      regionConfig: getRegionConfig('IN'),
+      subregionId: 'MUMBAI',
+      location: { lat: 19.0596, lng: 72.8295 },
+      stage: 'strict',
+      data: {
+        lat: '19.0596',
+        lon: '72.8295',
+        display_name: '23, Dr. BR Ambedkar Road, Adarsh Nagar, खार, मुंबई, महाराष्ट्र, 400050, भारत',
+        address: {
+          country_code: 'in',
+          country: 'भारत',
+          state: 'महाराष्ट्र',
+          city: 'मुंबई',
+          suburb: 'खार',
+          neighbourhood: 'Adarsh Nagar',
+          road: 'Dr. BR Ambedkar Road',
+          house_number: '23',
+          postcode: '400050',
+          'ISO3166-2-lvl4': 'IN-MH'
+        }
+      }
+    })
+
+    expect(result).not.toBeNull()
+    expect(result.admin).toBe('महाराष्ट्र')
+    expect(result.city).toBe('मुंबई')
+    expect(result.district).toBe('खार')
+    expect(result.postalCode).toBe('400050')
+    expect(result.fullAddress).toContain('Dr. BR Ambedkar Road')
+    expect(result.fullAddress).toContain('मुंबई')
+  })
 })
 
 describe('formatAddressByRegion', () => {
@@ -154,5 +189,16 @@ describe('formatAddressByRegion', () => {
       postalCode: '04520',
       country: 'South Korea'
     })).toBe('110 Sejong-daero, Jung-gu, Seoul, 04520, South Korea')
+  })
+
+  it('formats Indian addresses as street, city, locality, state, PIN, country', () => {
+    expect(formatAddressByRegion('IN', {
+      street: '23 Dr. BR Ambedkar Road',
+      locality: 'Mumbai',
+      district: 'Khar',
+      admin: 'Maharashtra',
+      postalCode: '400050',
+      country: 'India'
+    })).toBe('23 Dr. BR Ambedkar Road, Mumbai, Khar, Maharashtra, 400050, India')
   })
 })

@@ -11,6 +11,7 @@ A Cloudflare Worker that generates real, geocodable addresses for:
 - Thailand
 - Vietnam
 - South Korea
+- India
 
 It pairs each address with region-matched synthetic identity details, bilingual name output, map preview, a same-origin disposable inbox powered by `mail.tm`, and locally plausible phone prefixes for sign-up form testing.
 

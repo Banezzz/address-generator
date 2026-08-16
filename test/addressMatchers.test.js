@@ -116,4 +116,30 @@ describe('matchesSelectedSubregion', () => {
       }
     })).toBe(false)
   })
+
+  it('keeps Devanagari when matching India cities', () => {
+    expect(matchesSelectedSubregion({
+      regionId: 'IN',
+      subregionId: 'MUMBAI',
+      address: {
+        city: 'मुंबई',
+        state: 'महाराष्ट्र'
+      },
+      data: {
+        display_name: 'Dr. BR Ambedkar Road, खार, मुंबई, महाराष्ट्र, भारत'
+      }
+    })).toBe(true)
+
+    expect(matchesSelectedSubregion({
+      regionId: 'IN',
+      subregionId: 'DELHI',
+      address: {
+        city: 'मुंबई',
+        state: 'महाराष्ट्र'
+      },
+      data: {
+        display_name: 'Dr. BR Ambedkar Road, खार, मुंबई, महाराष्ट्र, भारत'
+      }
+    })).toBe(false)
+  })
 })

@@ -169,6 +169,12 @@ function isValidAddress (regionId, address, stage) {
       : Boolean(admin && district && street && postal !== 'N/A')
   }
 
+  if (regionId === 'IN') {
+    return relaxed
+      ? Boolean(admin && (locality || district) && street)
+      : Boolean(admin && locality && street && postal !== 'N/A')
+  }
+
   return false
 }
 
@@ -183,6 +189,10 @@ function resolveLocality (regionId, address) {
 
   if (regionId === 'KR') {
     return pickFirst(address.suburb, address.quarter, address.neighbourhood, address.city)
+  }
+
+  if (regionId === 'IN') {
+    return pickFirst(address.city, address.town, address.municipality)
   }
 
   return getLocality(address)
@@ -215,6 +225,10 @@ function resolveDistrict (regionId, address) {
 
   if (regionId === 'KR') {
     return pickFirst(address.borough, address.city_district, address.suburb, address.quarter)
+  }
+
+  if (regionId === 'IN') {
+    return pickFirst(address.suburb, address.neighbourhood, address.quarter, address.city_district)
   }
 
   return getDistrict(address)
@@ -256,6 +270,10 @@ function resolveAdmin (regionId, address, subregionId = '') {
 
   if (regionId === 'KR') {
     return pickFirst(address.city, address.state, address.province)
+  }
+
+  if (regionId === 'IN') {
+    return pickFirst(address.state, address.province, address.region)
   }
 
   return pickFirst(address.state, address.region)

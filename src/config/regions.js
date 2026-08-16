@@ -101,6 +101,13 @@ export const KR_AREAS = [
   { id: 'DAEGU', label: 'Daegu / 대구' }
 ]
 
+export const IN_AREAS = [
+  { id: 'MUMBAI', label: 'Mumbai / मुंबई' },
+  { id: 'DELHI', label: 'Delhi / दिल्ली' },
+  { id: 'BENGALURU', label: 'Bengaluru / बेंगलुरु' },
+  { id: 'HYDERABAD', label: 'Hyderabad / हैदराबाद' }
+]
+
 export const REGION_CONFIGS = [
   {
     id: 'US',
@@ -218,6 +225,19 @@ export const REGION_CONFIGS = [
     adminLabelNative: '市',
     postalLabel: 'Postal code',
     postalLabelNative: '邮编'
+  },
+  {
+    id: 'IN',
+    label: 'India',
+    nativeLabel: '印度',
+    countryCode: 'in',
+    languageHeader: 'en-IN,hi;q=0.8',
+    subregionLabel: 'City',
+    subregionLabelNative: '城市',
+    adminLabel: 'State',
+    adminLabelNative: '邦',
+    postalLabel: 'PIN code',
+    postalLabelNative: '邮编'
   }
 ]
 
@@ -250,6 +270,7 @@ export function getSubregionOptions (regionId) {
   if (regionId === 'TH') return TH_AREAS
   if (regionId === 'VN') return VN_AREAS
   if (regionId === 'KR') return KR_AREAS
+  if (regionId === 'IN') return IN_AREAS
 
   return []
 }

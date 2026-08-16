@@ -9,6 +9,7 @@ import {
   TH_AREAS,
   VN_AREAS,
   KR_AREAS,
+  IN_AREAS,
   REGION_CONFIGS,
   REGION_MAP,
   US_STATE_MAP,
@@ -71,11 +72,15 @@ describe('Region configs', () => {
   it('KR_AREAS should have 4 areas', () => {
     expect(KR_AREAS).toHaveLength(4)
   })
+
+  it('IN_AREAS should have 4 areas', () => {
+    expect(IN_AREAS).toHaveLength(4)
+  })
 })
 
 describe('REGION_CONFIGS', () => {
-  it('should have 9 regions', () => {
-    expect(REGION_CONFIGS).toHaveLength(9)
+  it('should have 10 regions', () => {
+    expect(REGION_CONFIGS).toHaveLength(10)
   })
 
   it('should have required properties', () => {
@@ -89,9 +94,9 @@ describe('REGION_CONFIGS', () => {
 })
 
 describe('REGION_MAP', () => {
-  it('should be a Map with 9 entries', () => {
+  it('should be a Map with 10 entries', () => {
     expect(REGION_MAP).toBeInstanceOf(Map)
-    expect(REGION_MAP.size).toBe(9)
+    expect(REGION_MAP.size).toBe(10)
   })
 
   it('should contain US config', () => {
@@ -128,7 +133,7 @@ describe('getRegionConfig', () => {
 describe('getRegionOptions', () => {
   it('should return all region configs', () => {
     const options = getRegionOptions()
-    expect(options).toHaveLength(9)
+    expect(options).toHaveLength(10)
   })
 })
 
@@ -158,6 +163,11 @@ describe('getSubregionOptions', () => {
   it('should return KR areas for KR', () => {
     const options = getSubregionOptions('KR')
     expect(options).toEqual(KR_AREAS)
+  })
+
+  it('should return IN areas for IN', () => {
+    const options = getSubregionOptions('IN')
+    expect(options).toEqual(IN_AREAS)
   })
 
   it('should return empty array for unknown region', () => {
