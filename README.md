@@ -145,6 +145,8 @@ export CLOUDFLARE_ACCOUNT_ID=...
 npm run deploy
 ```
 
+`workers_dev` is disabled. The public hostname is the custom domain in `wrangler.toml`. A deploy from this repo will keep `*.workers.dev` off.
+
 ## Notes
 
 - Addresses are intended for testing, design, and educational use.
