@@ -11,6 +11,13 @@ import {
 import { formatAddressByRegion, getSubregionLabel } from './addressFormatter.js'
 import { matchesSelectedSubregion } from './regionMatchers.js'
 
+const JP_ISO_ADMIN = {
+  'JP-13': '東京都',
+  'JP-27': '大阪府',
+  'JP-14': '神奈川県',
+  'JP-40': '福岡県'
+}
+
 export function normalizeGeocodeResult ({
   regionId,
   regionConfig,
@@ -24,7 +31,7 @@ export function normalizeGeocodeResult ({
     return null
   }
 
-  if ((address.country_code || '').toLowerCase() !== regionConfig.countryCode) {
+  if (!matchesCountry(regionId, regionConfig, address)) {
     return null
   }
 
@@ -156,6 +163,12 @@ function isValidAddress (regionId, address, stage) {
     return relaxed ? Boolean(admin && (district || locality) && street) : Boolean(admin && district && street)
   }
 
+  if (regionId === 'KR') {
+    return relaxed
+      ? Boolean(admin && (district || locality) && street)
+      : Boolean(admin && district && street && postal !== 'N/A')
+  }
+
   return false
 }
 
@@ -166,6 +179,10 @@ function resolveLocality (regionId, address) {
 
   if (regionId === 'JP') {
     return pickFirst(address.city, address.town, address.village, address.county, address.city_district)
+  }
+
+  if (regionId === 'KR') {
+    return pickFirst(address.suburb, address.quarter, address.neighbourhood, address.city)
   }
 
   return getLocality(address)
@@ -196,6 +213,10 @@ function resolveDistrict (regionId, address) {
     return pickFirst(address.city_district, address.suburb, address.quarter, address.county)
   }
 
+  if (regionId === 'KR') {
+    return pickFirst(address.borough, address.city_district, address.suburb, address.quarter)
+  }
+
   return getDistrict(address)
 }
 
@@ -213,7 +234,12 @@ function resolveAdmin (regionId, address, subregionId = '') {
   }
 
   if (regionId === 'JP') {
-    return pickFirst(address.state, address.province, address.region)
+    return pickFirst(
+      address.state,
+      address.province,
+      address.region,
+      JP_ISO_ADMIN[address['ISO3166-2-lvl4']]
+    )
   }
 
   if (regionId === 'TW') {
@@ -221,11 +247,15 @@ function resolveAdmin (regionId, address, subregionId = '') {
   }
 
   if (regionId === 'TH') {
-    return pickFirst(address.state, address.province, address.region)
+    return pickFirst(address.state, address.province, address.region, address.city)
   }
 
   if (regionId === 'VN') {
     return pickFirst(address.state, address.city, address.province)
+  }
+
+  if (regionId === 'KR') {
+    return pickFirst(address.city, address.state, address.province)
   }
 
   return pickFirst(address.state, address.region)
@@ -241,4 +271,26 @@ function resolvePostalCode (regionId, address) {
 
 function resolveCountry (regionConfig, address) {
   return pickFirst(address.country, regionConfig.label)
+}
+
+function matchesCountry (regionId, regionConfig, address) {
+  const code = (address.country_code || '').toLowerCase()
+  if (code === regionConfig.countryCode) {
+    return true
+  }
+
+  if (regionId === 'HK') {
+    const haystack = [
+      address.country,
+      address.region,
+      address.state,
+      address.city,
+      address.city_district
+    ].join(' ').toLowerCase()
+
+    return (code === 'cn' || code === 'hk') &&
+      (haystack.includes('hong kong') || haystack.includes('香港'))
+  }
+
+  return false
 }

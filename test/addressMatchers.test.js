@@ -64,4 +64,56 @@ describe('matchesSelectedSubregion', () => {
       }
     })).toBe(true)
   })
+
+  it('matches Hong Kong island names in Chinese', () => {
+    expect(matchesSelectedSubregion({
+      regionId: 'HK',
+      subregionId: 'HKI',
+      address: {
+        city_district: '香港島',
+        suburb: '中環'
+      },
+      data: {
+        display_name: '中環, 中西區, 香港島, 香港'
+      }
+    })).toBe(true)
+
+    expect(matchesSelectedSubregion({
+      regionId: 'HK',
+      subregionId: 'KLN',
+      address: {
+        city_district: '香港島',
+        suburb: '中環'
+      },
+      data: {
+        display_name: '中環, 中西區, 香港島, 香港'
+      }
+    })).toBe(false)
+  })
+
+  it('keeps Hangul when matching Korea areas', () => {
+    expect(matchesSelectedSubregion({
+      regionId: 'KR',
+      subregionId: 'SEOUL',
+      address: {
+        city: '서울특별시',
+        borough: '강남구'
+      },
+      data: {
+        display_name: '서초대로, 강남구, 서울특별시, 대한민국'
+      }
+    })).toBe(true)
+
+    expect(matchesSelectedSubregion({
+      regionId: 'KR',
+      subregionId: 'BUSAN',
+      address: {
+        city: '서울특별시',
+        borough: '강남구'
+      },
+      data: {
+        display_name: '서초대로, 강남구, 서울특별시, 대한민국'
+      }
+    })).toBe(false)
+  })
 })

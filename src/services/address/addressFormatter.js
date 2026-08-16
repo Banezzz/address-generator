@@ -45,6 +45,10 @@ export function formatAddressByRegion (regionId, {
     return joinNonEmpty([street, district, locality, admin, postalCode !== 'N/A' ? postalCode : '', country], ', ')
   }
 
+  if (regionId === 'KR') {
+    return joinNonEmpty([street, district, admin, postalCode !== 'N/A' ? postalCode : '', country])
+  }
+
   return joinNonEmpty([street, locality, admin, postalCode !== 'N/A' ? postalCode : '', country])
 }
 

@@ -94,6 +94,13 @@ export const VN_AREAS = [
   { id: 'CANTHO', label: 'Can Tho / Cần Thơ' }
 ]
 
+export const KR_AREAS = [
+  { id: 'SEOUL', label: 'Seoul / 서울' },
+  { id: 'BUSAN', label: 'Busan / 부산' },
+  { id: 'INCHEON', label: 'Incheon / 인천' },
+  { id: 'DAEGU', label: 'Daegu / 대구' }
+]
+
 export const REGION_CONFIGS = [
   {
     id: 'US',
@@ -198,6 +205,19 @@ export const REGION_CONFIGS = [
     adminLabelNative: '省市',
     postalLabel: 'Postal code',
     postalLabelNative: '邮编'
+  },
+  {
+    id: 'KR',
+    label: 'South Korea',
+    nativeLabel: '韩国',
+    countryCode: 'kr',
+    languageHeader: 'ko,en;q=0.8',
+    subregionLabel: 'Area',
+    subregionLabelNative: '区域',
+    adminLabel: 'City',
+    adminLabelNative: '市',
+    postalLabel: 'Postal code',
+    postalLabelNative: '邮编'
   }
 ]
 
@@ -229,6 +249,7 @@ export function getSubregionOptions (regionId) {
   if (regionId === 'TW') return TW_AREAS
   if (regionId === 'TH') return TH_AREAS
   if (regionId === 'VN') return VN_AREAS
+  if (regionId === 'KR') return KR_AREAS
 
   return []
 }

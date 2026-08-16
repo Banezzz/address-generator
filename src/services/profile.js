@@ -52,6 +52,13 @@ const VN_NAMES = [
   { nativeFamily: 'Phạm', nativeGiven: 'Gia Huy', latinGiven: 'Gia Huy', latinFamily: 'Pham', gender: 'Male' }
 ]
 
+const KR_NAMES = [
+  { nativeFamily: '김', nativeGiven: '민준', latinGiven: 'Min-Jun', latinFamily: 'Kim', gender: 'Male' },
+  { nativeFamily: '이', nativeGiven: '서연', latinGiven: 'Seo-Yeon', latinFamily: 'Lee', gender: 'Female' },
+  { nativeFamily: '박', nativeGiven: '지훈', latinGiven: 'Ji-Hoon', latinFamily: 'Park', gender: 'Male' },
+  { nativeFamily: '최', nativeGiven: '수아', latinGiven: 'Su-A', latinFamily: 'Choi', gender: 'Female' }
+]
+
 const NAME_BUCKET_MAP = new Map([
   ['US', US_NAMES],
   ['US_TAX_FREE', US_NAMES],
@@ -60,7 +67,8 @@ const NAME_BUCKET_MAP = new Map([
   ['JP', JP_NAMES],
   ['TW', TW_NAMES],
   ['TH', TH_NAMES],
-  ['VN', VN_NAMES]
+  ['VN', VN_NAMES],
+  ['KR', KR_NAMES]
 ])
 
 const US_AREA_CODES = {
@@ -187,6 +195,19 @@ const REGION_PHONE_RULES = {
         ? `+84 ${prefix} ${randomDigits(4)} ${randomDigits(4)}`
         : `+84 ${prefix} ${randomDigits(3)} ${randomDigits(4)}`
     }
+  },
+  KR: {
+    prefixes: {
+      SEOUL: ['2'],
+      BUSAN: ['51'],
+      INCHEON: ['32'],
+      DAEGU: ['53']
+    },
+    build (prefix) {
+      return prefix.length === 1
+        ? `+82 ${prefix}-${randomDigits(4)}-${randomDigits(4)}`
+        : `+82 ${prefix}-${randomDigits(3)}-${randomDigits(4)}`
+    }
   }
 }
 
@@ -213,9 +234,14 @@ export function buildProfile ({ regionId, subregionId }) {
 }
 
 function pickPerson (regionId) {
-  const bucket = NAME_BUCKET_MAP.get(regionId) || VN_NAMES
+  const bucket = NAME_BUCKET_MAP.get(regionId)
+  if (!bucket?.length) {
+    throw new Error(`No name bucket configured for region ${regionId}`)
+  }
   return bucket[Math.floor(Math.random() * bucket.length)]
 }
+
+const NO_SPACE_NATIVE_REGIONS = new Set(['JP', 'HK', 'TW', 'SG', 'KR'])
 
 function buildFullName (regionId, person, native) {
   if (regionId === 'US' || regionId === 'US_TAX_FREE') {
@@ -223,7 +249,8 @@ function buildFullName (regionId, person, native) {
   }
 
   if (native) {
-    return `${person.nativeFamily}${regionId === 'JP' || regionId === 'HK' || regionId === 'TW' || regionId === 'SG' ? '' : ' '}${person.nativeGiven}`.trim()
+    const separator = NO_SPACE_NATIVE_REGIONS.has(regionId) ? '' : ' '
+    return `${person.nativeFamily}${separator}${person.nativeGiven}`.trim()
   }
 
   return `${person.latinGiven} ${person.latinFamily}`.trim()

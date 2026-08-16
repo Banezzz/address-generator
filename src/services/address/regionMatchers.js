@@ -3,12 +3,12 @@ import { stripDiacritics } from '../formatters.js'
 
 const REGION_KEYWORDS = {
   HK: {
-    HKI: ['hong kong island', 'central', 'wan chai', 'causeway bay', 'north point', 'quarry bay', 'eastern district', 'aberdeen', 'southern district', 'stanley'],
-    KLN: ['kowloon', 'yau tsim mong', 'tsim sha tsui', 'mong kok', 'sham shui po', 'kowloon city', 'hung hom', 'kwun tong', 'wong tai sin', 'kowloon bay'],
-    NT: ['new territories', 'sha tin', 'tsuen wan', 'tuen mun', 'yuen long', 'tai po', 'sai kung', 'fanling', 'sheung shui', 'tung chung', 'lantau', 'islands district']
+    HKI: ['hong kong island', '香港島', '香港岛', 'central', '中環', '中环', 'wan chai', '灣仔', '湾仔', 'causeway bay', '銅鑼灣', '铜锣湾', 'north point', '北角', 'quarry bay', '鰂魚涌', '鲗鱼涌', 'eastern district', '東區', '东区', 'aberdeen', '香港仔', 'southern district', '南區', '南区', 'stanley', '赤柱', '中西區', '中西区'],
+    KLN: ['kowloon', '九龍', '九龙', 'yau tsim mong', '油尖旺', 'tsim sha tsui', '尖沙咀', 'mong kok', '旺角', 'sham shui po', '深水埗', 'kowloon city', '九龍城', 'hung hom', '紅磡', '红磡', 'kwun tong', '觀塘', '观塘', 'wong tai sin', '黃大仙', '黄大仙', 'kowloon bay', '九龍灣', '九龙湾'],
+    NT: ['new territories', '新界', 'sha tin', '沙田', 'tsuen wan', '荃灣', '荃湾', 'tuen mun', '屯門', '屯门', 'yuen long', '元朗', 'tai po', '大埔', 'sai kung', '西貢', '西贡', 'fanling', '粉嶺', '粉岭', 'sheung shui', '上水', 'tung chung', '東涌', '东涌', 'lantau', '大嶼山', '大屿山', 'islands district', '離島', '离岛']
   },
   SG: {
-    CENTRAL: ['downtown core', 'singapore river', 'orchard', 'museum', 'river valley', 'rochor', 'outram', 'marina centre', 'cbd', 'clarke quay'],
+    CENTRAL: ['downtown core', 'singapore river', 'orchard', 'museum', 'river valley', 'rochor', 'outram', 'marina centre', 'cbd', 'clarke quay', 'boat quay', 'raffles place', 'central region', 'downtown', '市中心', '市政区'],
     QUEENSTOWN: ['queenstown', 'commonwealth', 'redhill', 'buona vista', 'one-north', 'holland village', 'dawson'],
     JURONG_EAST: ['jurong east', 'yuhua', 'teban gardens', 'international business park', 'toh guan'],
     TAMPINES: ['tampines', 'simei', 'tampines west', 'tampines east']
@@ -36,6 +36,12 @@ const REGION_KEYWORDS = {
     HANOI: ['hanoi', 'ha noi', 'hà nội'],
     DANANG: ['da nang', 'đà nẵng'],
     CANTHO: ['can tho', 'cần thơ']
+  },
+  KR: {
+    SEOUL: ['seoul', '서울', '서울특별시', 'gangnam', '강남', 'jongno', '종로', 'mapo', 'yongsan', 'songpa', 'yeongdeungpo', 'kr-11'],
+    BUSAN: ['busan', '부산', '부산광역시', 'haeundae', '해운대', 'seomyeon', '서면', 'dongnae', 'sasang', 'kr-26'],
+    INCHEON: ['incheon', '인천', '인천광역시', 'songdo', '송도', 'yeonsu', '연수', 'bupyeong', '부평', 'namdong', 'kr-28'],
+    DAEGU: ['daegu', '대구', '대구광역시', 'suseong', '수성', 'dalseo', 'jung-gu', 'dong-gu', 'kr-27']
   }
 }
 
@@ -112,6 +118,6 @@ function collectParts (address = {}, data = {}) {
 function normalizeText (value) {
   return stripDiacritics(String(value ?? ''))
     .toLowerCase()
-    .replace(/[^a-z0-9\u3400-\u9fff\u0e00-\u0e7f]+/g, ' ')
+    .replace(/[^a-z0-9\u3400-\u9fff\u0e00-\u0e7f\uac00-\ud7a3]+/g, ' ')
     .trim()
 }
