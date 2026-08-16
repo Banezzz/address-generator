@@ -117,6 +117,7 @@ function collectParts (address = {}, data = {}) {
 
 function normalizeText (value) {
   return stripDiacritics(String(value ?? ''))
+    .normalize('NFC')
     .toLowerCase()
     .replace(/[^a-z0-9\u3400-\u9fff\u0e00-\u0e7f\uac00-\ud7a3]+/g, ' ')
     .trim()
