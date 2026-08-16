@@ -127,9 +127,20 @@ npm run check
 
 ## Deployment
 
-Deploy to Cloudflare Workers:
+This Worker deploys with the repo-local Wrangler CLI (`npm run deploy`). You do not need a global install.
+
+Interactive login on your own machine:
 
 ```bash
+npx wrangler login
+npm run deploy
+```
+
+Non-interactive deploy from CI or a Cloud Agent needs a Cloudflare API token with Workers edit permission, plus the account id:
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ACCOUNT_ID=...
 npm run deploy
 ```
 

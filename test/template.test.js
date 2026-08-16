@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getRegionConfig } from '../src/config/regions.js'
-import { renderApp } from '../src/ui/template.js'
+import { renderApp, renderErrorPage } from '../src/ui/template.js'
 
 describe('renderApp', () => {
   it('renders external assets and accessible UI hooks', () => {
@@ -46,8 +46,23 @@ describe('renderApp', () => {
     expect(html).toContain('type="application/json"')
     expect(html).toContain('aria-live="polite"')
     expect(html).toContain('title="Generated location preview map"')
+    expect(html).toContain('class="skip-link"')
+    expect(html).toContain('data-action="copy-identity"')
+    expect(html).toContain('data-action="copy-address"')
+    expect(html).toContain('id="identityHeading"')
+    expect(html).toContain('id="addressHeading"')
+    expect(html).toContain('id="savedAddressesList"')
     expect(html).not.toContain('onclick=')
     expect(html).not.toContain('<style>')
     expect(html).not.toContain('<template id="appPayload">')
+    expect(html).not.toContain('Cascade Geo Identity Lab')
+  })
+
+  it('renders a bilingual error page with a retry link', () => {
+    const html = renderErrorPage({ regionId: 'KR', subregionId: 'SEOUL' })
+
+    expect(html).toContain('这次没生成出地址')
+    expect(html).toContain('Try again')
+    expect(html).toContain('/?region=KR&amp;subregion=SEOUL')
   })
 })

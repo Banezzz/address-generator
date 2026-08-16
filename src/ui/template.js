@@ -22,14 +22,16 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
     regionLabel: regionConfig.label
   }
 
-  const infoRows = [
+  const identityRows = [
     { label: '姓 / Family', value: profile.familyNameNative, secondary: profile.familyNameLatin, span: 'compact' },
     { label: '名 / Given', value: profile.givenNameNative, secondary: profile.givenNameLatin, span: 'compact' },
     { label: '本地姓名 / Native', value: profile.fullNameNative, secondary: null, span: 'compact' },
     { label: 'Latin / Romanized', value: profile.fullNameLatin, secondary: null, span: 'compact' },
     { label: '性别 / Gender', value: profile.gender, secondary: null, span: 'compact' },
-    { label: '电话 / Phone', value: profile.phone, secondary: `Prefix ${profile.phonePrefix}`, span: 'compact' },
-    { label: '电子邮件 / Email', value: emailEntry.address, secondary: emailEntry.helperText, span: 'wide' },
+    { label: '电话 / Phone', value: profile.phone, secondary: `Prefix ${profile.phonePrefix}`, span: 'compact' }
+  ]
+
+  const addressRows = [
     { label: '街道 / Street', value: address.street, secondary: null, span: 'wide' },
     { label: '城市 / City', value: address.city, secondary: address.district !== 'N/A' ? address.district : null, span: 'compact' },
     { label: `${regionConfig.adminLabelNative} / ${regionConfig.adminLabel}`, value: address.admin, secondary: null, span: 'compact' },
@@ -51,6 +53,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
     </head>
     <body>
       <script id="appPayload" type="application/json">${serializePayload(payload)}</script>
+      <a class="skip-link" href="#generatorForm">跳到生成器 / Skip to generator</a>
 
       <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
         <div class="loading-spinner"></div>
@@ -61,9 +64,9 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
       <main class="app-shell">
         <section class="hero-card">
           <div class="hero-copy">
-            <span class="eyebrow">Cascade Geo Identity Lab</span>
-            <h1>真实多地区地址生成器</h1>
-            <p>Generate real geocodable addresses with region-matched identity details, phone prefixes, map preview, disposable inbox, and one-click local save.</p>
+            <span class="eyebrow">Address Generator</span>
+            <h1>真实多地区测试身份</h1>
+            <p>生成可上地图的真实地址，并配上地区匹配的姓名、电话和临时邮箱，方便测注册表单。</p>
           </div>
           <div class="hero-actions">
             <button class="ghost-btn" type="button" data-action="share">分享 / Share</button>
@@ -87,34 +90,42 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
                 </select>
               </div>
               <div class="toolbar-actions">
-                <button type="submit" class="primary-btn">生成新地址 / Generate</button>
-                <button type="submit" class="ghost-btn" name="refresh" value="1">刷新同地区 / Refresh</button>
-                <a class="link-btn" href="${escapeHtml(address.mapExternalUrl)}" target="_blank" rel="noreferrer">打开地图 / Open Map</a>
+                <button type="submit" class="primary-btn">生成 / Generate</button>
+                <button type="submit" class="ghost-btn" name="refresh" value="1">换一条 / Refresh</button>
               </div>
             </form>
 
             <div class="results-card">
               <div class="card-heading">
                 <div>
-                  <span class="section-kicker">生成结果 / Generated Result</span>
+                  <span class="section-kicker">生成结果 / Result</span>
                   <h2>${escapeHtml(regionConfig.nativeLabel)} / ${escapeHtml(regionConfig.label)}</h2>
                 </div>
                 <div class="card-heading-actions">
-                  <button type="button" class="ghost-btn small" data-action="share">分享 / Share</button>
-                  <span class="status-pill">Live geocode</span>
+                  <button type="button" class="ghost-btn small" data-action="copy-identity">复制身份 / Copy ID</button>
+                  <button type="button" class="ghost-btn small" data-action="copy-address">复制地址 / Copy address</button>
+                  <span class="status-pill">OSM live</span>
                 </div>
               </div>
 
-              <div class="notice-row">
-                <div class="phone-note">
-                  <span class="phone-note-title">Phone prefix check</span>
-                  <p>${escapeHtml(profile.phoneExplanation)}</p>
+              <section class="result-section" aria-labelledby="identityHeading">
+                <div class="result-section-head">
+                  <h3 id="identityHeading">身份 / Identity</h3>
+                  <p class="result-section-hint">${escapeHtml(profile.phoneExplanation)}</p>
                 </div>
-              </div>
+                <div class="info-grid">
+                  ${identityRows.map(renderInfoRow).join('')}
+                </div>
+              </section>
 
-              <div class="info-grid">
-                ${infoRows.map(renderInfoRow).join('')}
-              </div>
+              <section class="result-section" aria-labelledby="addressHeading">
+                <div class="result-section-head">
+                  <h3 id="addressHeading">地址 / Address</h3>
+                </div>
+                <div class="info-grid">
+                  ${addressRows.map(renderInfoRow).join('')}
+                </div>
+              </section>
             </div>
 
             <div class="map-card">
@@ -123,7 +134,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
                   <span class="section-kicker">地理位置 / Map</span>
                   <h3>Location preview</h3>
                 </div>
-                <span class="map-hint">Google Maps embed</span>
+                <a class="link-btn small" href="${escapeHtml(address.mapExternalUrl)}" target="_blank" rel="noreferrer">打开地图 / Open Map</a>
               </div>
               <div class="map-container">
                 <div id="mapLoading" class="map-loading">地图加载中 / Loading map...</div>
@@ -146,7 +157,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
         </section>
       </main>
 
-      <div class="copy-toast" id="copyToast" role="status" aria-live="polite">Copied</div>
+      <div class="copy-toast" id="copyToast" role="status" aria-live="polite">已复制 / Copied</div>
       <div class="message-host" id="messageHost" aria-live="polite" aria-atomic="false"></div>
       <div class="modal" id="saveDialog" hidden aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saveDialogTitle">
@@ -154,8 +165,8 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
           <label class="sr-only" for="noteInput">Address note</label>
           <input id="noteInput" type="text" placeholder="添加备注 / Optional note" autocomplete="off" />
           <div class="modal-actions">
-            <button class="ghost-btn" type="button" data-action="close-save-dialog">取消</button>
-            <button class="primary-btn" type="button" data-action="confirm-save">确认</button>
+            <button class="ghost-btn" type="button" data-action="close-save-dialog">取消 / Cancel</button>
+            <button class="primary-btn" type="button" data-action="confirm-save">确认 / Save</button>
           </div>
         </div>
       </div>
@@ -180,10 +191,10 @@ export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
       <main class="error-shell">
         <article class="error-card">
           <span class="eyebrow">Generator Error</span>
-          <h1>Unable to generate an address</h1>
-          <p>Something went wrong while generating the address. Try reloading or switching to a different region or subregion.</p>
+          <h1>这次没生成出地址</h1>
+          <p>上游地理编码超时或当前地区没有足够完整的结果。换一个子区域，或再试一次同一地区。</p>
           <div class="hero-actions">
-            <a class="primary-btn" href="${escapeHtml(backHref)}">Back to generator</a>
+            <a class="primary-btn" href="${escapeHtml(backHref)}">返回生成器 / Try again</a>
           </div>
         </article>
       </main>

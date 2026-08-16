@@ -3,10 +3,11 @@ import { escapeHtml } from '../services/formatters.js'
 export function renderInfoRow (row) {
   const secondary = row.secondary ? `<div class="info-secondary">${escapeHtml(row.secondary)}</div>` : ''
   const spanClass = row.span ? ` ${escapeHtml(row.span)}` : ''
+  const label = row.label || ''
 
-  return `<article class="info-row copy-card${spanClass}" role="button" tabindex="0" data-copy-value="${escapeHtml(row.value || '')}">
+  return `<article class="info-row copy-card${spanClass}" role="button" tabindex="0" aria-label="Copy ${escapeHtml(label)}" data-copy-value="${escapeHtml(row.value || '')}" data-copy-label="${escapeHtml(label)}">
     <div class="info-meta">
-      <span class="info-label">${escapeHtml(row.label)}</span>
+      <span class="info-label">${escapeHtml(label)}</span>
     </div>
     <div class="info-value">
       <span>${escapeHtml(row.value || '')}</span>
@@ -41,21 +42,7 @@ export function renderSavedPanel () {
       </div>
       <button class="ghost-btn small" type="button" data-action="export-csv">导出 CSV</button>
     </div>
-    <div class="table-wrap">
-      <table class="saved-table">
-        <thead>
-          <tr>
-            <th>备注</th>
-            <th>地区</th>
-            <th>姓名</th>
-            <th>电话</th>
-            <th>地址</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="savedAddressesBody"></tbody>
-      </table>
-    </div>
+    <div class="saved-list" id="savedAddressesList"></div>
   </div>`
 }
 
@@ -63,10 +50,10 @@ export function renderNotesPanel () {
   return `<div class="about-card">
     <span class="section-kicker">说明 / Notes</span>
     <ul>
-      <li>Addresses are selected via OpenStreetMap reverse geocoding.</li>
-      <li>Identity details are synthetic and region-matched, not real people.</li>
+      <li>Addresses come from OpenStreetMap reverse geocoding and are meant for form testing.</li>
+      <li>Names and phone numbers are synthetic and only region-matched, not real people.</li>
+      <li>Click any result field to copy it. Use Copy ID for a ready-to-paste identity block.</li>
       <li>Live inbox sessions stay in this browser tab and use same-origin Worker APIs.</li>
-      <li>This tool is intended for testing, learning, and UI prototyping only.</li>
     </ul>
   </div>`
 }

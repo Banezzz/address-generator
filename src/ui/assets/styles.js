@@ -99,6 +99,25 @@ export function getStyles () {
       border: 0;
     }
 
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: 12px;
+      z-index: 120;
+      transform: translateY(-140%);
+      background: var(--accent);
+      color: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 0.83rem;
+      font-weight: 600;
+    }
+
+    .skip-link:focus {
+      transform: none;
+      text-decoration: none;
+    }
+
     /* Ambient blobs removed — content is the design */
     .ambient {
       display: none;
@@ -291,6 +310,17 @@ export function getStyles () {
       background: var(--accent-hover);
     }
 
+    .primary-btn:focus-visible,
+    .ghost-btn:focus-visible,
+    .link-btn:focus-visible,
+    .danger-btn:focus-visible,
+    .tiny-copy:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .ghost-btn,
     .link-btn {
       background: var(--surface-elevated);
@@ -303,7 +333,8 @@ export function getStyles () {
       background: var(--surface-tertiary);
     }
 
-    .ghost-btn.small {
+    .ghost-btn.small,
+    .link-btn.small {
       height: 28px;
       padding: 0 10px;
       font-size: 0.78rem;
@@ -363,33 +394,28 @@ export function getStyles () {
       background: var(--surface-elevated);
     }
 
-    /* ─── Notice ─────────────────────────────────────────────── */
-
-    .notice-row {
-      margin-bottom: 12px;
+    .result-section + .result-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--separator);
     }
 
-    .phone-note {
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      background: var(--warning-soft);
-      border: 1px solid rgba(255, 159, 10, 0.18);
+    .result-section-head {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 10px;
     }
 
-    .phone-note-title {
-      display: block;
-      margin-bottom: 3px;
-      color: var(--warning);
-      font-size: 0.68rem;
+    .result-section-head h3 {
+      font-size: 0.82rem;
       font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      letter-spacing: -0.01em;
     }
 
-    .phone-note p {
-      color: rgba(255, 230, 180, 0.85);
-      font-size: 0.83rem;
-      line-height: 1.5;
+    .result-section-hint {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      line-height: 1.45;
     }
 
     /* ─── Info grid ──────────────────────────────────────────── */
@@ -514,14 +540,6 @@ export function getStyles () {
       display: block;
     }
 
-    /* ─── Table ──────────────────────────────────────────────── */
-
-    .table-wrap {
-      overflow: auto;
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-md);
-    }
-
     /* ─── Inbox ──────────────────────────────────────────────── */
 
     .inbox-meta,
@@ -549,10 +567,24 @@ export function getStyles () {
     }
 
     .inbox-empty {
+      display: grid;
+      gap: 6px;
       color: var(--text-secondary);
       line-height: 1.6;
       padding: 14px;
       font-size: 0.875rem;
+    }
+
+    .inbox-empty strong {
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .inbox-alias {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      word-break: break-all;
     }
 
     .inbox-credentials {
@@ -651,37 +683,50 @@ export function getStyles () {
       color: var(--accent);
     }
 
-    /* ─── Saved table ────────────────────────────────────────── */
+    /* ─── Saved list ─────────────────────────────────────────── */
 
-    .saved-table {
-      width: 100%;
-      border-collapse: collapse;
+    .saved-list {
+      display: grid;
+      gap: 8px;
     }
 
-    .saved-table th,
-    .saved-table td {
-      padding: 10px 14px;
-      font-size: 0.83rem;
-      border-bottom: 1px solid var(--separator);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    .saved-table th {
-      position: sticky;
-      top: 0;
+    .saved-item {
+      display: grid;
+      gap: 4px;
+      padding: 12px 14px;
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-md);
       background: var(--surface-elevated);
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
     }
 
-    .empty-cell {
+    .saved-item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .saved-item-top strong {
+      font-size: 0.9rem;
+    }
+
+    .saved-item-top span,
+    .saved-item-note,
+    .saved-item-phone {
       color: var(--text-secondary);
-      text-align: center;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
+    }
+
+    .saved-item-address {
+      font-size: 0.83rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .saved-item-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
     }
 
     /* ─── Notes ──────────────────────────────────────────────── */
@@ -909,36 +954,24 @@ export function getStyles () {
         height: 220px;
       }
 
-      .saved-table,
-      .saved-table thead,
-      .saved-table tbody,
-      .saved-table tr,
-      .saved-table td {
-        display: block;
+      .card-heading,
+      .card-heading-actions {
+        align-items: start;
+      }
+
+      .card-heading-actions {
         width: 100%;
       }
+    }
 
-      .saved-table thead {
-        display: none;
-      }
-
-      .saved-table tr {
-        border-bottom: 1px solid var(--separator);
-        padding: 10px 0;
-      }
-
-      .saved-table td {
-        border: 0;
-        padding: 4px 14px;
-      }
-
-      .saved-table td::before {
-        content: attr(data-label) '：';
-        color: var(--text-secondary);
-        display: block;
-        margin-bottom: 2px;
-        font-size: 0.7rem;
-        font-weight: 500;
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
     }
   `

@@ -56,8 +56,12 @@ function bindDocumentActions() {
     }
 
     var copyTarget = event.target.closest('[data-copy-value]');
-    if (copyTarget && !event.target.closest('a, button, input, select, textarea')) {
-      copyToClipboard(copyTarget.getAttribute('data-copy-value') || '');
+    if (copyTarget && !event.target.closest('a, input, select, textarea')) {
+      event.preventDefault();
+      copyToClipboard(
+        copyTarget.getAttribute('data-copy-value') || '',
+        copyTarget.getAttribute('data-copy-label') || ''
+      );
     }
   });
 
@@ -65,7 +69,10 @@ function bindDocumentActions() {
     var copyTarget = event.target.closest('.copy-card[data-copy-value]');
     if (copyTarget && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault();
-      copyToClipboard(copyTarget.getAttribute('data-copy-value') || '');
+      copyToClipboard(
+        copyTarget.getAttribute('data-copy-value') || '',
+        copyTarget.getAttribute('data-copy-label') || ''
+      );
       return;
     }
 
@@ -168,6 +175,18 @@ function handleAction(event, target) {
   if (action === 'share') {
     event.preventDefault();
     shareResult();
+    return;
+  }
+
+  if (action === 'copy-identity') {
+    event.preventDefault();
+    copyIdentityPack();
+    return;
+  }
+
+  if (action === 'copy-address') {
+    event.preventDefault();
+    copyAddressOnly();
     return;
   }
 
@@ -442,7 +461,7 @@ function changeSubregion(subregionId) {
   syncSelectionUrl(selection.regionId, subregionId || selection.subregionId);
 }
 
-async function copyToClipboard(text) {
+async function copyToClipboard(text, label) {
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);
@@ -450,10 +469,27 @@ async function copyToClipboard(text) {
       fallbackCopy(text);
     }
 
-    showCopyToast();
+    showCopyToast(label);
   } catch (error) {
     showMessage('复制失败 / Copy failed', 'error');
   }
+}
+
+function copyIdentityPack() {
+  var profile = payload.profile || {};
+  var address = payload.address || {};
+  var text = [
+    profile.fullNameNative || '',
+    profile.fullNameLatin || '',
+    profile.phone || '',
+    address.fullAddress || ''
+  ].filter(Boolean).join('\n');
+
+  copyToClipboard(text, '身份信息 / identity');
+}
+
+function copyAddressOnly() {
+  copyToClipboard((payload.address && payload.address.fullAddress) || '', '地址 / address');
 }
 
 function fallbackCopy(text) {
@@ -468,12 +504,13 @@ function fallbackCopy(text) {
   document.body.removeChild(input);
 }
 
-function showCopyToast() {
+function showCopyToast(label) {
   var toast = document.getElementById('copyToast');
   if (!toast) {
     return;
   }
 
+  toast.textContent = label ? ('已复制 / Copied · ' + label) : '已复制 / Copied';
   toast.classList.add('visible');
   if (state.copyToastTimerId) {
     clearTimeout(state.copyToastTimerId);
@@ -620,8 +657,9 @@ function renderInbox() {
   if (!inbox || !inbox.address) {
     inboxMeta.innerHTML =
       '<div class="inbox-empty">' +
-        '<strong>Suggested:</strong> ' + escapeForHtml(emailEntry.address) + '<br />' +
-        '<span>' + escapeForHtml(emailEntry.helperText) + '</span>' +
+        '<strong>还没有收件箱 / No live inbox yet</strong>' +
+        '<span>下面的别名只是占位，不能收信。点创建后才会生成可接收验证码的 mail.tm 地址。</span>' +
+        '<span class="inbox-alias">Suggested: ' + escapeForHtml(emailEntry.address) + '</span>' +
       '</div>';
     inboxActions.innerHTML =
       '<button class="primary-btn full-width" type="button" data-action="create-inbox"' + disabledAttr(state.inboxBusy) + '>' +
@@ -651,7 +689,7 @@ function renderInbox() {
     '<button class="ghost-btn small" type="button" data-action="clear-inbox"' + disabledAttr(state.inboxBusy) + '>清除会话</button>';
 
   if (!inbox.messages || inbox.messages.length === 0) {
-    inboxList.innerHTML = '<div class="inbox-empty">No messages yet. Use this address in a sign-up flow and click refresh.</div>';
+    inboxList.innerHTML = '<div class="inbox-empty">还没有邮件。把这个地址填进注册表单，然后点刷新。</div>';
   } else {
     inboxList.innerHTML = inbox.messages.map(function (message) {
       return '<button class="mail-item" type="button" data-action="open-message" data-message-id="' + escapeForHtml(message.id) + '"' + disabledAttr(state.inboxBusy) + '>' +
@@ -663,7 +701,7 @@ function renderInbox() {
   }
 
   if (!inbox.selectedMessage) {
-    inboxDetail.innerHTML = '<div class="inbox-empty">Select a message to read it here.</div>';
+    inboxDetail.innerHTML = '<div class="inbox-empty">点一封邮件即可在这里阅读。</div>';
     return;
   }
 
@@ -756,25 +794,30 @@ function deleteAddress(index) {
 
 function renderSavedAddresses() {
   var rows = getSavedAddresses();
-  var body = document.getElementById('savedAddressesBody');
-  if (!body) {
+  var list = document.getElementById('savedAddressesList');
+  if (!list) {
     return;
   }
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="6" class="empty-cell">暂无保存的地址 / No saved entries</td></tr>';
+    list.innerHTML = '<div class="inbox-empty">还没有保存的地址。生成一条后点右上角保存。</div>';
     return;
   }
 
-  body.innerHTML = rows.map(function (row, index) {
-    return '<tr>' +
-      '<td data-label="备注">' + escapeForHtml(row.note) + '</td>' +
-      '<td data-label="地区">' + escapeForHtml(row.region) + '</td>' +
-      '<td data-label="姓名">' + escapeForHtml(row.name) + '</td>' +
-      '<td data-label="电话">' + escapeForHtml(row.phone) + '</td>' +
-      '<td data-label="地址">' + escapeForHtml(row.fullAddress) + '</td>' +
-      '<td data-label="操作"><button class="danger-btn" type="button" data-action="delete-saved" data-index="' + String(index) + '">删除</button></td>' +
-    '</tr>';
+  list.innerHTML = rows.map(function (row, index) {
+    return '<article class="saved-item">' +
+      '<div class="saved-item-top">' +
+        '<strong>' + escapeForHtml(row.name) + '</strong>' +
+        '<span>' + escapeForHtml(row.region) + '</span>' +
+      '</div>' +
+      '<p class="saved-item-note">' + escapeForHtml(row.note) + '</p>' +
+      '<p class="saved-item-address">' + escapeForHtml(row.fullAddress) + '</p>' +
+      '<p class="saved-item-phone">' + escapeForHtml(row.phone) + '</p>' +
+      '<div class="saved-item-actions">' +
+        '<button class="tiny-copy" type="button" data-copy-value="' + escapeForHtml(row.fullAddress) + '" data-copy-label="地址 / address">复制地址</button>' +
+        '<button class="danger-btn" type="button" data-action="delete-saved" data-index="' + String(index) + '">删除</button>' +
+      '</div>' +
+    '</article>';
   }).join('');
 }
 
