@@ -484,6 +484,9 @@ function generateErrorMessage(error) {
   if (code === 'unknown_region') {
     return '未知地区 / Unknown region';
   }
+  if (code === 'nominatim') {
+    return '上游地理编码失败 / Nominatim is unavailable';
+  }
   return '生成失败 / ' + ((error && error.message) || 'Generate failed');
 }
 

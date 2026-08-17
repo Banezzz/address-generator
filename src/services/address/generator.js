@@ -38,7 +38,7 @@ export async function generateAddress ({
   const httpClient = createHttpClient({ fetchFn, logger })
   const cachedHits = await readCachedHits(env, regionId, subregionId)
 
-  if (shouldServeCachedResult(cachedHits, forceRefresh, randomFn)) {
+  if (shouldServeCachedResult(cachedHits, forceRefresh)) {
     const hit = pickCachedHit(cachedHits, randomFn)
     if (hit?.address) {
       return {
@@ -59,7 +59,7 @@ export async function generateAddress ({
       httpClient,
       timeoutMs,
       startedAt,
-      cachedHits
+      cachedHits: forceRefresh ? [] : cachedHits
     })
 
     await writeCachedHit(env, regionId, subregionId, generated)
@@ -121,7 +121,8 @@ async function searchAddress ({
           }
         }
 
-        for (const location of locations) {
+        for (let locationIndex = 0; locationIndex < locations.length; locationIndex += 1) {
+          const location = locations[locationIndex]
           if (!location) {
             continue
           }
@@ -148,11 +149,12 @@ async function searchAddress ({
               return normalized
             }
           } catch (error) {
-            const isLastAttempt = stage === VALIDATION_STAGES[VALIDATION_STAGES.length - 1] &&
+            const isLastCandidate = stage === VALIDATION_STAGES[VALIDATION_STAGES.length - 1] &&
               retry === MAX_RETRIES - 1 &&
-              attempt === ATTEMPTS_PER_RETRY - 1
+              attempt === ATTEMPTS_PER_RETRY - 1 &&
+              locationIndex === locations.length - 1
 
-            if (isLastAttempt) {
+            if (isLastCandidate) {
               logger?.error?.('Address generation exhausted all attempts', {
                 requestId,
                 regionId,
@@ -160,6 +162,7 @@ async function searchAddress ({
                 stage,
                 retry,
                 attempt,
+                locationIndex,
                 error
               })
               throw error

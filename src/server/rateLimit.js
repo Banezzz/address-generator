@@ -7,15 +7,28 @@ export async function consumeGenerateRateLimit (env, ip, {
   now = Date.now()
 } = {}) {
   const key = `rl:${ip || 'local'}`
-  const kvCount = await incrementKv(env, key)
-  if (typeof kvCount === 'number') {
+  const memory = consumeMemory(key, now, limit)
+  if (!memory.allowed) {
+    return memory
+  }
+
+  const kvCount = await incrementKv(env, key, now)
+  if (typeof kvCount === 'number' && kvCount > limit) {
     return {
-      allowed: kvCount <= limit,
-      remaining: Math.max(0, limit - kvCount),
+      allowed: false,
+      remaining: 0,
       retryAfterSeconds: 60
     }
   }
 
+  return memory
+}
+
+export function resetRateLimitForTests () {
+  memoryHits.clear()
+}
+
+function consumeMemory (key, now, limit) {
   const stamps = (memoryHits.get(key) || []).filter(stamp => now - stamp < WINDOW_MS)
   stamps.push(now)
   memoryHits.set(key, stamps)
@@ -27,20 +40,18 @@ export async function consumeGenerateRateLimit (env, ip, {
   }
 }
 
-export function resetRateLimitForTests () {
-  memoryHits.clear()
-}
-
-async function incrementKv (env, key) {
+async function incrementKv (env, key, now) {
   if (!env?.ADDRESS_CACHE?.get || !env?.ADDRESS_CACHE?.put) {
     return null
   }
 
   try {
-    const current = Number(await env.ADDRESS_CACHE.get(key)) || 0
-    const next = current + 1
-    await env.ADDRESS_CACHE.put(key, String(next), { expirationTtl: 60 })
-    return next
+    const raw = await env.ADDRESS_CACHE.get(key, 'json')
+    const stamps = (Array.isArray(raw) ? raw : [])
+      .filter(stamp => Number.isFinite(stamp) && now - stamp < WINDOW_MS)
+    stamps.push(now)
+    await env.ADDRESS_CACHE.put(key, JSON.stringify(stamps), { expirationTtl: 60 })
+    return stamps.length
   } catch {
     return null
   }

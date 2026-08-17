@@ -1,6 +1,8 @@
 import { hasRegion } from '../regions/index.js'
 import { GenerateError } from '../services/address/errors.js'
 import { buildGeneratedResult } from '../services/generateResult.js'
+import { readClientIp } from './clientIp.js'
+import { consumeGenerateRateLimit } from './rateLimit.js'
 import { htmlResponse } from './response.js'
 import { renderApp, renderErrorPage } from '../ui/template.js'
 
@@ -15,6 +17,15 @@ export async function handlePageRequest (context) {
       subregionId: requestedSubregion,
       code: 'unknown_region'
     }), 400)
+  }
+
+  const rate = await consumeGenerateRateLimit(context.env, readClientIp(context.request))
+  if (!rate.allowed) {
+    return htmlResponse(renderErrorPage({
+      regionId: requestedRegion || 'US',
+      subregionId: requestedSubregion,
+      code: 'rate_limit'
+    }), 429)
   }
 
   const regionId = requestedRegion || 'US'

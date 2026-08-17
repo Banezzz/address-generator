@@ -1,11 +1,11 @@
 import { buildGeneratedResult } from '../../services/generateResult.js'
 import { GenerateError } from '../../services/address/errors.js'
+import { readClientIp } from '../clientIp.js'
 import { jsonResponse } from '../response.js'
 import { consumeGenerateRateLimit } from '../rateLimit.js'
 
 export async function handleGenerate (context) {
-  const ip = readClientIp(context.request)
-  const rate = await consumeGenerateRateLimit(context.env, ip)
+  const rate = await consumeGenerateRateLimit(context.env, readClientIp(context.request))
   if (!rate.allowed) {
     throw new GenerateError('rate_limit', 'Too many generate requests. Try again in a minute.', {
       status: 429,
@@ -46,10 +46,4 @@ export async function handleGenerate (context) {
   }, 200, {
     'x-ratelimit-remaining': String(rate.remaining)
   })
-}
-
-function readClientIp (request) {
-  return request.headers.get('cf-connecting-ip') ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    'local'
 }

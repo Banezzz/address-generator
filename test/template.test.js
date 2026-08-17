@@ -70,6 +70,7 @@ describe('renderApp', () => {
     expect(renderErrorPage({ code: 'timeout' })).toContain('地理编码超时了')
     expect(renderErrorPage({ code: 'rate_limit' })).toContain('请求太频繁')
     expect(renderErrorPage({ code: 'sparse' })).toContain('这个区域结果太少')
+    expect(renderErrorPage({ code: 'nominatim' })).toContain('上游地理编码失败')
     expect(renderErrorPage({ regionId: 'ZZ', code: 'unknown_region' })).toContain('未知地区')
     expect(renderErrorPage({ regionId: 'ZZ', code: 'unknown_region' })).toContain('/?region=US')
   })
