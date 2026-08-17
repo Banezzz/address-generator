@@ -1,5 +1,6 @@
 import { getRegionOptions, getSubregionOptions } from '../config/regions.js'
 import { escapeHtml } from '../services/formatters.js'
+import { getAssetManifest } from './assets/manifest.js'
 import { renderInboxPanel, renderInfoRow, renderNotesPanel, renderSavedPanel } from './renderers.js'
 
 export function renderApp ({ regionConfig, regionId, subregionId, address, profile, emailEntry }) {
@@ -13,7 +14,11 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
       label: option.label,
       nativeLabel: option.nativeLabel,
       subregionLabel: option.subregionLabel,
-      subregionLabelNative: option.subregionLabelNative
+      subregionLabelNative: option.subregionLabelNative,
+      adminLabel: option.adminLabel,
+      adminLabelNative: option.adminLabelNative,
+      postalLabel: option.postalLabel,
+      postalLabelNative: option.postalLabelNative
     })),
     subregionOptionsByRegion: Object.fromEntries(regionOptions.map(option => [option.id, getSubregionOptions(option.id)])),
     address,
@@ -41,6 +46,8 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
     { label: '经纬度 / Coordinates', value: address.coordinates, secondary: address.sourceLabel, span: 'full' }
   ]
 
+  const assets = getAssetManifest()
+
   return `<!DOCTYPE html>
   <html lang="zh-CN">
     <head>
@@ -48,8 +55,8 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Multi-Region Address Generator</title>
       <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230a84ff'/%3E%3Cstop offset='100%25' style='stop-color:%23409cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M16 2C10.5 2 6 6.5 6 12c0 7.5 10 18 10 18s10-10.5 10-18c0-5.5-4.5-10-10-10zm0 13.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5z'/%3E%3C/svg%3E" />
-      <link rel="stylesheet" href="/assets/app.css" />
-      <script type="module" src="/assets/app.js"></script>
+      <link rel="stylesheet" href="${assets.css.path}" />
+      <script type="module" src="${assets.js.path}"></script>
     </head>
     <body>
       <script id="appPayload" type="application/json">${serializePayload(payload)}</script>
@@ -99,7 +106,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
               <div class="card-heading">
                 <div>
                   <span class="section-kicker">生成结果 / Result</span>
-                  <h2>${escapeHtml(regionConfig.nativeLabel)} / ${escapeHtml(regionConfig.label)}</h2>
+                  <h2 id="resultHeading">${escapeHtml(regionConfig.nativeLabel)} / ${escapeHtml(regionConfig.label)}</h2>
                 </div>
                 <div class="card-heading-actions">
                   <button type="button" class="ghost-btn small" data-action="copy-identity">复制身份 / Copy ID</button>
@@ -111,9 +118,9 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
               <section class="result-section" aria-labelledby="identityHeading">
                 <div class="result-section-head">
                   <h3 id="identityHeading">身份 / Identity</h3>
-                  <p class="result-section-hint">${escapeHtml(profile.phoneExplanation)}</p>
+                  <p class="result-section-hint" id="phoneHint">${escapeHtml(profile.phoneExplanation)}</p>
                 </div>
-                <div class="info-grid">
+                <div class="info-grid" id="identityGrid">
                   ${identityRows.map(renderInfoRow).join('')}
                 </div>
               </section>
@@ -122,7 +129,7 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
                 <div class="result-section-head">
                   <h3 id="addressHeading">地址 / Address</h3>
                 </div>
-                <div class="info-grid">
+                <div class="info-grid" id="addressGrid">
                   ${addressRows.map(renderInfoRow).join('')}
                 </div>
               </section>
@@ -134,12 +141,13 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
                   <span class="section-kicker">地理位置 / Map</span>
                   <h3>Location preview</h3>
                 </div>
-                <a class="link-btn small" href="${escapeHtml(address.mapExternalUrl)}" target="_blank" rel="noreferrer">打开地图 / Open Map</a>
+                <a class="link-btn small" id="mapExternalLink" href="${escapeHtml(address.mapExternalUrl)}" target="_blank" rel="noreferrer">打开地图 / Open Map</a>
               </div>
               <div class="map-container">
                 <div id="mapLoading" class="map-loading">地图加载中 / Loading map...</div>
                 <iframe
                   class="map-frame"
+                  id="mapFrame"
                   src="${escapeHtml(address.mapEmbedUrl)}"
                   title="Generated location preview map"
                   loading="lazy"
@@ -174,8 +182,37 @@ export function renderApp ({ regionConfig, regionId, subregionId, address, profi
   </html>`
 }
 
-export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
-  const backHref = `/?region=${encodeURIComponent(regionId)}${subregionId ? `&subregion=${encodeURIComponent(subregionId)}` : ''}`
+const ERROR_COPY = {
+  timeout: {
+    title: '地理编码超时了',
+    body: 'OpenStreetMap 这次响应太慢。稍等几秒再试，或换一个子区域。'
+  },
+  rate_limit: {
+    title: '请求太频繁',
+    body: '生成接口有每分钟次数限制。请等一分钟后再试。'
+  },
+  sparse: {
+    title: '这个区域结果太少',
+    body: '当前子区域没有足够完整的 OSM 地址。换一个子区域，或再试一次同一地区。'
+  },
+  nominatim: {
+    title: '上游地理编码失败',
+    body: 'Nominatim 暂时不可用或拒绝了请求。稍后重试即可。'
+  },
+  unknown_region: {
+    title: '未知地区',
+    body: '这个 region 参数不受支持，没有回退到美国。请从下拉列表里选一个已发布的地区。'
+  },
+  unknown: {
+    title: '这次没生成出地址',
+    body: '上游地理编码超时或当前地区没有足够完整的结果。换一个子区域，或再试一次同一地区。'
+  }
+}
+
+export function renderErrorPage ({ regionId = 'US', subregionId = '', code = 'unknown' } = {}) {
+  const backHref = `/?region=${encodeURIComponent(hasKnownRegion(regionId) ? regionId : 'US')}${subregionId ? `&subregion=${encodeURIComponent(subregionId)}` : ''}`
+  const copy = ERROR_COPY[code] || ERROR_COPY.unknown
+  const assets = getAssetManifest()
 
   return `<!DOCTYPE html>
   <html lang="zh-CN">
@@ -183,7 +220,7 @@ export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Address Generator Error</title>
-      <link rel="stylesheet" href="/assets/app.css" />
+      <link rel="stylesheet" href="${assets.css.path}" />
     </head>
     <body>
       <div class="ambient ambient-left"></div>
@@ -191,8 +228,8 @@ export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
       <main class="error-shell">
         <article class="error-card">
           <span class="eyebrow">Generator Error</span>
-          <h1>这次没生成出地址</h1>
-          <p>上游地理编码超时或当前地区没有足够完整的结果。换一个子区域，或再试一次同一地区。</p>
+          <h1>${escapeHtml(copy.title)}</h1>
+          <p>${escapeHtml(copy.body)}</p>
           <div class="hero-actions">
             <a class="primary-btn" href="${escapeHtml(backHref)}">返回生成器 / Try again</a>
           </div>
@@ -200,6 +237,10 @@ export function renderErrorPage ({ regionId = 'US', subregionId = '' } = {}) {
       </main>
     </body>
   </html>`
+}
+
+function hasKnownRegion (regionId) {
+  return getRegionOptions().some(option => option.id === regionId)
 }
 
 function serializePayload (value) {

@@ -1,7 +1,11 @@
+import { handleGenerate } from './api/generate.js'
 import { handleCreateInbox, handleGetInboxMessage, handleListInboxMessages } from './api/inbox.js'
 import { handleApiError, methodNotAllowed, notFound } from './response.js'
 
 const ROUTES = {
+  '/api/generate': {
+    GET: handleGenerate
+  },
   '/api/inbox/create': {
     POST: handleCreateInbox
   },

@@ -1,8 +1,7 @@
 import { handleApiRequest } from './server/apiRouter.js'
 import { handlePageRequest } from './server/pageHandler.js'
 import { cssResponse, javascriptResponse } from './server/response.js'
-import { getClientScript } from './ui/assets/app.js'
-import { getStyles } from './ui/assets/styles.js'
+import { getAssetManifest } from './ui/assets/manifest.js'
 
 export default {
   async fetch (request, env, ctx) {
@@ -22,13 +21,14 @@ export async function handleRequest (request, { env = {}, ctx = {}, fetchFn = fe
     requestId,
     log: logWithRequestId.bind(null, requestId)
   }
+  const assets = getAssetManifest()
 
-  if (url.pathname === '/assets/app.js') {
-    return javascriptResponse(getClientScript())
+  if (url.pathname === assets.js.path || url.pathname === '/assets/app.js') {
+    return javascriptResponse(assets.js.body, { immutable: url.pathname === assets.js.path })
   }
 
-  if (url.pathname === '/assets/app.css') {
-    return cssResponse(getStyles())
+  if (url.pathname === assets.css.path || url.pathname === '/assets/app.css') {
+    return cssResponse(assets.css.body, { immutable: url.pathname === assets.css.path })
   }
 
   if (url.pathname.startsWith('/api/')) {
