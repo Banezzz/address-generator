@@ -119,9 +119,8 @@ describe('getRegionConfig', () => {
     expect(config.label).toBe('Japan')
   })
 
-  it('should return US config for unknown region', () => {
-    const config = getRegionConfig('UNKNOWN')
-    expect(config.id).toBe('US')
+  it('should not fall back to US for an unknown region', () => {
+    expect(getRegionConfig('UNKNOWN')).toBeNull()
   })
 
   it('should return US config for undefined', () => {

@@ -164,8 +164,10 @@ function bindFormSubmit() {
     return;
   }
 
-  form.addEventListener('submit', function () {
-    showLoading();
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var forceRefresh = Boolean(event.submitter && event.submitter.getAttribute('name') === 'refresh');
+    generateCurrent(forceRefresh);
   });
 }
 
@@ -441,10 +443,147 @@ function ensureSubregionSync(preferredSubregion) {
 }
 
 function refreshCurrent(forceRefresh) {
+  generateCurrent(forceRefresh !== false);
+}
+
+async function generateCurrent(forceRefresh) {
   ensureSubregionSync('');
   showLoading();
   var selection = getCurrentSelection();
-  window.location.href = buildQuery(selection.regionId, selection.subregionId, forceRefresh !== false);
+  syncSelectionUrl(selection.regionId, selection.subregionId);
+
+  try {
+    var url = '/api/generate?region=' + encodeURIComponent(selection.regionId || 'US');
+    if (selection.subregionId) {
+      url += '&subregion=' + encodeURIComponent(selection.subregionId);
+    }
+    if (forceRefresh) {
+      url += '&refresh=1';
+    }
+
+    var data = await fetchJson(url);
+    applyGeneratedResult(data);
+    hideLoading();
+  } catch (error) {
+    hideLoading();
+    showMessage(generateErrorMessage(error), 'error');
+  }
+}
+
+function generateErrorMessage(error) {
+  var code = error && error.code ? error.code : '';
+  if (code === 'timeout') {
+    return '地理编码超时 / Geocoding timed out';
+  }
+  if (code === 'rate_limit') {
+    return '请求太频繁 / Rate limited, try again shortly';
+  }
+  if (code === 'sparse') {
+    return '这个区域结果太少 / Not enough complete OSM results';
+  }
+  if (code === 'unknown_region') {
+    return '未知地区 / Unknown region';
+  }
+  if (code === 'nominatim') {
+    return '上游地理编码失败 / Nominatim is unavailable';
+  }
+  return '生成失败 / ' + ((error && error.message) || 'Generate failed');
+}
+
+function applyGeneratedResult(data) {
+  payload.regionId = data.regionId;
+  payload.subregionId = data.subregionId;
+  payload.address = data.address;
+  payload.profile = data.profile;
+  payload.emailEntry = data.emailEntry;
+  payload.regionLabel = data.regionLabel;
+
+  var payloadNode = document.getElementById('appPayload');
+  if (payloadNode) {
+    payloadNode.textContent = JSON.stringify({
+      regionId: payload.regionId,
+      subregionId: payload.subregionId,
+      regionConfigs: payload.regionConfigs,
+      subregionOptionsByRegion: payload.subregionOptionsByRegion,
+      address: payload.address,
+      profile: payload.profile,
+      emailEntry: payload.emailEntry,
+      regionLabel: payload.regionLabel
+    });
+  }
+
+  applySelection(data.regionId, data.subregionId);
+
+  var heading = document.getElementById('resultHeading');
+  if (heading) {
+    heading.textContent = (data.regionNativeLabel || '') + ' / ' + (data.regionLabel || '');
+  }
+
+  var phoneHint = document.getElementById('phoneHint');
+  if (phoneHint && data.profile) {
+    phoneHint.textContent = data.profile.phoneExplanation || '';
+  }
+
+  var identityGrid = document.getElementById('identityGrid');
+  if (identityGrid && data.profile) {
+    identityGrid.innerHTML = buildIdentityRows(data.profile).map(renderClientInfoRow).join('');
+  }
+
+  var addressGrid = document.getElementById('addressGrid');
+  if (addressGrid && data.address) {
+    addressGrid.innerHTML = buildAddressRows(data).map(renderClientInfoRow).join('');
+  }
+
+  var mapLink = document.getElementById('mapExternalLink');
+  if (mapLink && data.address && data.address.mapExternalUrl) {
+    mapLink.setAttribute('href', data.address.mapExternalUrl);
+  }
+
+  var mapFrame = document.getElementById('mapFrame');
+  var mapLoading = document.getElementById('mapLoading');
+  if (mapFrame && data.address && data.address.mapEmbedUrl) {
+    if (mapLoading) {
+      mapLoading.hidden = false;
+      mapLoading.textContent = '地图加载中 / Loading map...';
+    }
+    mapFrame.src = data.address.mapEmbedUrl;
+  }
+
+  renderInbox();
+}
+
+function buildIdentityRows(profile) {
+  return [
+    { label: '姓 / Family', value: profile.familyNameNative, secondary: profile.familyNameLatin, span: 'compact' },
+    { label: '名 / Given', value: profile.givenNameNative, secondary: profile.givenNameLatin, span: 'compact' },
+    { label: '本地姓名 / Native', value: profile.fullNameNative, secondary: null, span: 'compact' },
+    { label: 'Latin / Romanized', value: profile.fullNameLatin, secondary: null, span: 'compact' },
+    { label: '性别 / Gender', value: profile.gender, secondary: null, span: 'compact' },
+    { label: '电话 / Phone', value: profile.phone, secondary: profile.phonePrefix ? ('Prefix ' + profile.phonePrefix) : '', span: 'compact' }
+  ];
+}
+
+function buildAddressRows(data) {
+  var address = data.address || {};
+  var regionConfig = regionConfigMap[data.regionId] || {};
+  return [
+    { label: '街道 / Street', value: address.street, secondary: null, span: 'wide' },
+    { label: '城市 / City', value: address.city, secondary: address.district !== 'N/A' ? address.district : null, span: 'compact' },
+    { label: (regionConfig.adminLabelNative || 'Admin') + ' / ' + (regionConfig.adminLabel || 'Admin'), value: address.admin, secondary: null, span: 'compact' },
+    { label: (regionConfig.postalLabelNative || 'Postal') + ' / ' + (regionConfig.postalLabel || 'Postal'), value: address.postalCode, secondary: null, span: 'compact' },
+    { label: '国家 / Region', value: (data.regionNativeLabel || regionConfig.nativeLabel || '') + ' / ' + (data.regionLabel || regionConfig.label || ''), secondary: null, span: 'compact' },
+    { label: '完整地址 / Full', value: address.fullAddress, secondary: null, span: 'full' },
+    { label: '经纬度 / Coordinates', value: address.coordinates, secondary: address.sourceLabel, span: 'full' }
+  ];
+}
+
+function renderClientInfoRow(row) {
+  var secondary = row.secondary ? '<div class="info-secondary">' + escapeForHtml(row.secondary) + '</div>' : '';
+  var spanClass = row.span ? ' ' + escapeForHtml(row.span) : '';
+  return '<article class="info-row copy-card' + spanClass + '" role="button" tabindex="0" aria-label="Copy ' + escapeForHtml(row.label || '') + '" data-copy-value="' + escapeForHtml(row.value || '') + '" data-copy-label="' + escapeForHtml(row.label || '') + '">' +
+    '<div class="info-meta"><span class="info-label">' + escapeForHtml(row.label || '') + '</span></div>' +
+    '<div class="info-value"><span>' + escapeForHtml(row.value || '') + '</span>' + secondary + '</div>' +
+  '</article>';
 }
 
 function syncSelectionUrl(regionId, subregionId) {
@@ -658,8 +797,8 @@ function renderInbox() {
     inboxMeta.innerHTML =
       '<div class="inbox-empty">' +
         '<strong>还没有收件箱 / No live inbox yet</strong>' +
-        '<span>下面的别名只是占位，不能收信。点创建后才会生成可接收验证码的 mail.tm 地址。</span>' +
-        '<span class="inbox-alias">Suggested: ' + escapeForHtml(emailEntry.address) + '</span>' +
+        '<span>下面的 @placeholder.invalid 别名不能收信，只是本地占位。点创建后才会生成可接收验证码的 mail.tm 地址。</span>' +
+        '<span class="inbox-alias">Placeholder: ' + escapeForHtml(emailEntry.address) + '</span>' +
       '</div>';
     inboxActions.innerHTML =
       '<button class="primary-btn full-width" type="button" data-action="create-inbox"' + disabledAttr(state.inboxBusy) + '>' +
@@ -893,7 +1032,10 @@ async function fetchJson(url, init) {
     var message = data && data.error && data.error.message
       ? data.error.message
       : data.message || data.detail || 'Request failed';
-    throw new Error(message);
+    var error = new Error(message);
+    error.code = data && data.error && data.error.code ? data.error.code : '';
+    error.status = response.status;
+    throw error;
   }
 
   return data;

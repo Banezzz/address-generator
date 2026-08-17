@@ -40,8 +40,8 @@ describe('renderApp', () => {
     })
 
     expect(html).toContain('lang="zh-CN"')
-    expect(html).toContain('/assets/app.js')
-    expect(html).toContain('/assets/app.css')
+    expect(html).toMatch(/\/assets\/app\.[a-z0-9]+\.js/)
+    expect(html).toMatch(/\/assets\/app\.[a-z0-9]+\.css/)
     expect(html).toContain('id="appPayload"')
     expect(html).toContain('type="application/json"')
     expect(html).toContain('aria-live="polite"')
@@ -64,5 +64,14 @@ describe('renderApp', () => {
     expect(html).toContain('这次没生成出地址')
     expect(html).toContain('Try again')
     expect(html).toContain('/?region=KR&amp;subregion=SEOUL')
+  })
+
+  it('distinguishes timeout, rate limit, and unknown-region errors', () => {
+    expect(renderErrorPage({ code: 'timeout' })).toContain('地理编码超时了')
+    expect(renderErrorPage({ code: 'rate_limit' })).toContain('请求太频繁')
+    expect(renderErrorPage({ code: 'sparse' })).toContain('这个区域结果太少')
+    expect(renderErrorPage({ code: 'nominatim' })).toContain('上游地理编码失败')
+    expect(renderErrorPage({ regionId: 'ZZ', code: 'unknown_region' })).toContain('未知地区')
+    expect(renderErrorPage({ regionId: 'ZZ', code: 'unknown_region' })).toContain('/?region=US')
   })
 })

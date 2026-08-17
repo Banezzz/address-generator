@@ -32,17 +32,22 @@ It pairs each address with region-matched synthetic identity details, bilingual 
 
 ### Request flow
 
-- `src/index.js` routes page requests, API requests, and UI asset requests
-- `src/server/pageHandler.js` generates the page response
+- `src/index.js` routes page requests, API requests, and hashed UI asset requests
+- `src/server/pageHandler.js` generates the first page response
 - `src/server/apiRouter.js` applies method checks and stable JSON error envelopes
 - `src/server/security.js` owns CSP and other security headers
+
+### Regions
+
+- `src/regions/` is the source of truth for each country: subregions, seeds, OSM field mapping, format, names, and phones
+- `src/config/regions.js` stays a thin facade so existing imports and tests keep working
 
 ### Services
 
 - `src/services/httpClient.js` provides shared timeout/retry/rate-limited upstream fetch logic
 - `src/services/geocodeClient.js` talks to Nominatim
 - `src/services/mailTmClient.js` talks to `mail.tm` and caches active domains
-- `src/services/address/*` contains address generation, normalization, formatting, and subregion matchers
+- `src/services/address/*` contains address generation, caching, normalization, formatting, and subregion matchers
 - `src/services/tempInbox.js` is the app-facing inbox service wrapper
 
 ### UI
@@ -54,13 +59,16 @@ It pairs each address with region-matched synthetic identity details, bilingual 
 
 ## API
 
-The Worker exposes same-origin inbox APIs:
+The Worker exposes same-origin APIs:
 
 ```text
+GET  /api/generate?region=&subregion=
 POST /api/inbox/create
 GET  /api/inbox/messages
 GET  /api/inbox/message?id=...
 ```
+
+`/api/generate` is rate-limited per client IP. Unknown `region` values return `400` with `unknown_region` instead of falling back to the United States. The browser generate button uses this API so the page does not fully reload.
 
 `/api/inbox/messages` and `/api/inbox/message` require:
 
@@ -118,6 +126,7 @@ npm run check
 - `package-lock.json` is tracked and should stay committed.
 - `.wrangler/` is ignored and should not appear in `git status` after normal local development.
 - CI runs `npm run lint` and `npm test` on pushes to `main` and on pull requests.
+- Pushes to `main` also deploy the Worker when `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are configured.
 
 ## Security Notes
 

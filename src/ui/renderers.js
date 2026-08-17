@@ -53,6 +53,7 @@ export function renderNotesPanel () {
       <li>Addresses come from OpenStreetMap reverse geocoding and are meant for form testing.</li>
       <li>Names and phone numbers are synthetic and only region-matched, not real people.</li>
       <li>Click any result field to copy it. Use Copy ID for a ready-to-paste identity block.</li>
+      <li>The suggested @placeholder.invalid alias cannot receive mail. Create a live inbox to get a real mail.tm address.</li>
       <li>Live inbox sessions stay in this browser tab and use same-origin Worker APIs.</li>
     </ul>
   </div>`

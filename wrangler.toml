@@ -7,3 +7,7 @@ preview_urls = false
 [[routes]]
 pattern = "addygen.banez.de"
 custom_domain = true
+
+[[kv_namespaces]]
+binding = "ADDRESS_CACHE"
+id = "b5cb2f5a22b449ceb0582adfce0c6a74"
