@@ -39,9 +39,11 @@ export function getApiSecurityHeaders () {
   }
 }
 
-export function getAssetSecurityHeaders () {
+export function getAssetSecurityHeaders (immutable = false) {
   return {
-    'cache-control': 'public, max-age=300',
+    'cache-control': immutable
+      ? 'public, max-age=31536000, immutable'
+      : 'public, max-age=300',
     'x-content-type-options': 'nosniff'
   }
 }

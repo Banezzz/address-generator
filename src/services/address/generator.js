@@ -9,6 +9,13 @@ import {
   VALIDATION_STAGES
 } from './constants.js'
 import { normalizeGeocodeResult } from './addressNormalizer.js'
+import {
+  pickCachedHit,
+  readCachedHits,
+  shouldServeCachedResult,
+  writeCachedHit
+} from './addressCache.js'
+import { GenerateError, classifyGenerateFailure } from './errors.js'
 import { getRandomLocation, getSeedScopes } from './seedSelector.js'
 
 export async function generateAddress ({
@@ -16,13 +23,70 @@ export async function generateAddress ({
   regionId,
   subregionId,
   requestId,
+  env = {},
+  forceRefresh = false,
   randomFn = Math.random,
   logger = console
 }) {
   const regionConfig = getRegionConfig(regionId)
+  if (!regionConfig) {
+    throw new GenerateError('unknown_region', `Unknown region: ${regionId}`, { status: 400 })
+  }
+
   const timeoutMs = REGION_ADDRESS_TIMEOUT_MS[regionId] || ADDRESS_GENERATION_TIMEOUT_MS
   const startedAt = Date.now()
   const httpClient = createHttpClient({ fetchFn, logger })
+  const cachedHits = await readCachedHits(env, regionId, subregionId)
+
+  if (shouldServeCachedResult(cachedHits, forceRefresh)) {
+    const hit = pickCachedHit(cachedHits, randomFn)
+    if (hit?.address) {
+      return {
+        ...hit.address,
+        fromCache: true
+      }
+    }
+  }
+
+  try {
+    const generated = await searchAddress({
+      regionId,
+      regionConfig,
+      subregionId,
+      requestId,
+      randomFn,
+      logger,
+      httpClient,
+      timeoutMs,
+      startedAt,
+      cachedHits: forceRefresh ? [] : cachedHits
+    })
+
+    await writeCachedHit(env, regionId, subregionId, generated)
+    return {
+      ...generated,
+      fromCache: false
+    }
+  } catch (error) {
+    throw classifyGenerateFailure(error, regionConfig.label)
+  }
+}
+
+async function searchAddress ({
+  regionId,
+  regionConfig,
+  subregionId,
+  requestId,
+  randomFn,
+  logger,
+  httpClient,
+  timeoutMs,
+  startedAt,
+  cachedHits
+}) {
+  const cachedLocations = cachedHits
+    .filter(hit => Number.isFinite(hit.lat) && Number.isFinite(hit.lng))
+    .map(hit => ({ lat: hit.lat, lng: hit.lng, fromCache: true }))
 
   for (const stage of VALIDATION_STAGES) {
     for (let retry = 0; retry < MAX_RETRIES; retry += 1) {
@@ -30,7 +94,16 @@ export async function generateAddress ({
 
       for (let attempt = 0; attempt < ATTEMPTS_PER_RETRY; attempt += 1) {
         if (Date.now() - startedAt > timeoutMs) {
-          throw new Error(`Timed out while searching for a valid address for ${regionConfig.label}`)
+          throw new GenerateError(
+            'timeout',
+            `Timed out while searching for a valid address for ${regionConfig.label}`,
+            { status: 504 }
+          )
+        }
+
+        const locations = []
+        if (attempt === 0 && cachedLocations.length) {
+          locations.push(cachedLocations[attempt % cachedLocations.length])
         }
 
         for (const scope of scopes) {
@@ -43,13 +116,19 @@ export async function generateAddress ({
             retry,
             randomFn
           })
+          if (location) {
+            locations.push(location)
+          }
+        }
+
+        for (let locationIndex = 0; locationIndex < locations.length; locationIndex += 1) {
+          const location = locations[locationIndex]
           if (!location) {
             continue
           }
 
           try {
             const data = await reverseGeocode({
-              fetchFn,
               regionConfig,
               location,
               subregionId,
@@ -70,12 +149,12 @@ export async function generateAddress ({
               return normalized
             }
           } catch (error) {
-            const isLastAttempt = stage === VALIDATION_STAGES[VALIDATION_STAGES.length - 1] &&
+            const isLastCandidate = stage === VALIDATION_STAGES[VALIDATION_STAGES.length - 1] &&
               retry === MAX_RETRIES - 1 &&
               attempt === ATTEMPTS_PER_RETRY - 1 &&
-              scope === scopes[scopes.length - 1]
+              locationIndex === locations.length - 1
 
-            if (isLastAttempt) {
+            if (isLastCandidate) {
               logger?.error?.('Address generation exhausted all attempts', {
                 requestId,
                 regionId,
@@ -83,7 +162,7 @@ export async function generateAddress ({
                 stage,
                 retry,
                 attempt,
-                scope,
+                locationIndex,
                 error
               })
               throw error
@@ -94,5 +173,9 @@ export async function generateAddress ({
     }
   }
 
-  throw new Error(`Unable to find a valid address for ${regionConfig.label}`)
+  throw new GenerateError(
+    'sparse',
+    `Unable to find a valid address for ${regionConfig.label}`,
+    { status: 422 }
+  )
 }

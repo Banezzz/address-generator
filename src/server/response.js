@@ -1,3 +1,4 @@
+import { GenerateError } from '../services/address/errors.js'
 import { HttpError } from '../services/httpClient.js'
 import { getApiSecurityHeaders, getAssetSecurityHeaders, getHtmlSecurityHeaders } from './security.js'
 
@@ -23,19 +24,19 @@ export function jsonResponse (payload, status = 200, extraHeaders = {}) {
   })
 }
 
-export function javascriptResponse (source) {
+export function javascriptResponse (source, { immutable = false } = {}) {
   return new Response(source, {
     headers: {
-      ...getAssetSecurityHeaders(),
+      ...getAssetSecurityHeaders(immutable),
       'content-type': 'application/javascript;charset=UTF-8'
     }
   })
 }
 
-export function cssResponse (source) {
+export function cssResponse (source, { immutable = false } = {}) {
   return new Response(source, {
     headers: {
-      ...getAssetSecurityHeaders(),
+      ...getAssetSecurityHeaders(immutable),
       'content-type': 'text/css;charset=UTF-8'
     }
   })
@@ -84,6 +85,16 @@ export function unauthorized (requestId, message = 'Missing or invalid Authoriza
 }
 
 export function handleApiError (error, requestId) {
+  if (error instanceof GenerateError) {
+    return apiErrorResponse({
+      requestId,
+      status: clampStatus(error.status),
+      code: error.code,
+      message: error.message,
+      details: error.details
+    })
+  }
+
   if (error instanceof HttpError) {
     return apiErrorResponse({
       requestId,
